@@ -23,7 +23,6 @@ import kotlinx.serialization.*
 import kotlinx.serialization.json.Json
 import java.io.File
 
-const val CLIENT_ID = "795600891859304458"
 const val W2G_API_URL = "https://w2g.tv/rooms/create.json"
 
 private val json = Json {
@@ -49,7 +48,7 @@ suspend fun main() {
 
     client.on<ReadyEvent> {
         println(
-            "Invite this bot to your guild: https://discord.com/api/oauth2/authorize?client_id=$CLIENT_ID&scope=bot&permissions=${
+            "Invite this bot to your guild: https://discord.com/api/oauth2/authorize?client_id=${client.selfId}&scope=bot&permissions=${
                 Permissions(
                     Permission.ViewChannel,
                     Permission.SendMessages,
@@ -57,6 +56,7 @@ suspend fun main() {
                 ).code.value
             }"
         )
+
     }
 
     client.on<MessageCreateEvent> {
