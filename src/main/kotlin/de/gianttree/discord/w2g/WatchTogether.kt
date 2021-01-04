@@ -1,5 +1,7 @@
 package de.gianttree.discord.w2g
 
+import de.gianttree.discord.w2g.api.WatchTogetherRequest
+import de.gianttree.discord.w2g.api.WatchTogetherResponse
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
 import dev.kord.core.Kord
@@ -56,7 +58,6 @@ suspend fun main() {
                 ).code.value
             }"
         )
-
     }
 
     client.on<MessageCreateEvent> {
@@ -138,37 +139,4 @@ private fun readConfig(): Config {
 data class Config(
     val discordToken: String = "YOUR_DISCORD_TOKEN_HERE",
     val w2gToken: String = "YOUR_W2G_TOKEN_HERE"
-)
-
-@Serializable
-data class WatchTogetherRequest(
-    @SerialName("w2g_api_key") val apiToken: String,
-    @SerialName("share") val url: String,
-    @SerialName("bg_color") val backgroundColor: String = "#000000",
-    @SerialName("bg_opacity") val backgroundOpacity: String = "100"
-)
-
-@Serializable
-data class WatchTogetherResponse(
-    val id: Int,
-    @SerialName("streamkey") val streamKey: String,
-    @SerialName("created_at") val createdAt: String,
-    val persistent: Boolean,
-    @SerialName("persistent_name") val persistentName: String?,
-    val deleted: Boolean,
-    val moderated: Boolean,
-    val location: String,
-    @SerialName("stream_created") val streamCreated: Boolean,
-    val background: String?,
-    @SerialName("moderated_background") val moderatedBackground: Boolean,
-    @SerialName("moderated_playlist") val moderatedPlaylist: Boolean,
-    @SerialName("bg_color") val backgroundColor: String,
-    @SerialName("bg_opacity") val backgroundOpacity: Double,
-    @SerialName("moderated_item") val moderatedItem: Boolean,
-    @SerialName("theme_bg") val themeBackground: String?,
-    @SerialName("playlist_id") val playlistId: Int,
-    @SerialName("members_only") val membersOnly: Boolean,
-    @SerialName("moderated_suggestions") val moderatedSuggestions: Boolean,
-    @SerialName("moderated_chat") val moderatedChat: Boolean,
-    @SerialName("moderated_user") val moderatedUser: Boolean
 )
