@@ -100,6 +100,9 @@ I will then answer with a link to your private w2g.tv room.""".trimIndent()
             message.reply {
                 content =
                     "${message.author?.mention ?: ""} Room created! Watch here: <https://w2g.tv/rooms/${answer.streamKey}>!"
+                allowedMentions {
+                    repliedUser = false
+                }
             }
         }
     }
