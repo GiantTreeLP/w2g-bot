@@ -50,7 +50,7 @@ suspend fun main() {
 
     client.on<ReadyEvent> {
         println(
-            "Invite this bot to your guild: https://discord.com/api/oauth2/authorize?client_id=${client.selfId}&scope=bot&permissions=${
+            "Invite this bot to your guild: https://discord.com/api/oauth2/authorize?client_id=${client.selfId.asString}&scope=bot&permissions=${
                 Permissions(
                     Permission.ViewChannel,
                     Permission.SendMessages,
