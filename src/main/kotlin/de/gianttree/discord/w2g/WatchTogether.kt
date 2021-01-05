@@ -104,6 +104,7 @@ I will then answer with a link to your private w2g.tv room.""".trimIndent()
                     repliedUser = false
                 }
             }
+            message.deleteReaction(this.userId, this.emoji)
         }
     }
 
