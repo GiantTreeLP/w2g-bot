@@ -13,11 +13,12 @@ repositories {
     maven {
         url = uri("https://dl.bintray.com/kordlib/Kord")
     }
+    maven("https://oss.sonatype.org/content/repositories/snapshots")
 }
 
 dependencies {
 
-    val kordVersion = "0.7.0-RC"
+    val kordVersion = "0.7.0-SNAPSHOT"
     val slf4jVersion = "1.7.30"
 
     implementation("dev.kord", "kord-core", kordVersion)
