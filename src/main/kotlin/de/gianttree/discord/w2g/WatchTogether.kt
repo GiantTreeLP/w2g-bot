@@ -2,6 +2,7 @@ package de.gianttree.discord.w2g
 
 import de.gianttree.discord.w2g.api.WatchTogetherRequest
 import de.gianttree.discord.w2g.api.WatchTogetherResponse
+import dev.kord.common.entity.AllowedMentionType
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
 import dev.kord.core.Kord
@@ -102,6 +103,7 @@ I will then answer with a link to your private w2g.tv room.""".trimIndent()
                     "${this@on.user.mention} Room created! Watch here: <https://w2g.tv/rooms/${answer.streamKey}>!"
                 allowedMentions {
                     repliedUser = false
+                    add(AllowedMentionType.UserMentions)
                 }
             }
         }
