@@ -18,7 +18,7 @@ repositories {
 
 dependencies {
 
-    val kordVersion = "0.7.0-SNAPSHOT"
+    val kordVersion = "0.7.0-RC"
     val slf4jVersion = "1.7.30"
 
     implementation("dev.kord", "kord-core", kordVersion)
