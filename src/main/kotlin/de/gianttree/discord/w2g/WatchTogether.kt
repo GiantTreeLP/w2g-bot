@@ -31,6 +31,7 @@ const val W2G_API_URL = "https://w2g.tv/rooms/create.json"
 private val json = Json {
     encodeDefaults = true
     prettyPrint = true
+    ignoreUnknownKeys = true
 }
 
 private val urlRegex =

@@ -25,5 +25,6 @@ data class WatchTogetherResponse(
     @SerialName("members_only") val membersOnly: Boolean,
     @SerialName("moderated_suggestions") val moderatedSuggestions: Boolean,
     @SerialName("moderated_chat") val moderatedChat: Boolean,
-    @SerialName("moderated_user") val moderatedUser: Boolean
+    @SerialName("moderated_user") val moderatedUser: Boolean,
+    @SerialName("moderated_cam") val moderatedCam: Boolean
 )
