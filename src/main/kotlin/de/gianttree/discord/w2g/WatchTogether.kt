@@ -110,7 +110,7 @@ I will then answer with a link to your private w2g.tv room.""".trimIndent()
                 }
             }
 
-            println("Room ${answer.streamKey} created for guild ${this.guildId}")
+            println("Room ${answer.streamKey} created for guild ${this.guildId?.asString}")
 
         }
     }
@@ -120,7 +120,7 @@ I will then answer with a link to your private w2g.tv room.""".trimIndent()
     }
 
     client.on<GuildDeleteEvent> {
-        println("Guild became unavailable: ${this.guild?.name} (${this.guildId}, unavailable: ${this.unavailable})")
+        println("Guild became unavailable: ${this.guild?.name} (${this.guildId.asString}, unavailable: ${this.unavailable})")
     }
 
     client.login {
