@@ -10,6 +10,7 @@ import dev.kord.core.behavior.reply
 import dev.kord.core.enableEvent
 import dev.kord.core.event.gateway.ReadyEvent
 import dev.kord.core.event.guild.GuildCreateEvent
+import dev.kord.core.event.guild.GuildDeleteEvent
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.event.message.ReactionAddEvent
 import dev.kord.core.on
@@ -108,11 +109,18 @@ I will then answer with a link to your private w2g.tv room.""".trimIndent()
                     add(AllowedMentionType.UserMentions)
                 }
             }
+
+            println("Room ${answer.streamKey} created for guild ${this.guildId}")
+
         }
     }
 
     client.on<GuildCreateEvent> {
         println("Guild became available: ${this.guild.name}")
+    }
+
+    client.on<GuildDeleteEvent> {
+        println("Guild became unavailable: ${this.guild?.name} (${this.guildId}, unavailable: ${this.unavailable})")
     }
 
     client.login {
