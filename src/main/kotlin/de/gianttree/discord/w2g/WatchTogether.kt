@@ -50,6 +50,12 @@ suspend fun main() {
         }
     }
 
+    val httpClient = HttpClient(CIO) {
+        install(JsonFeature) {
+            this.serializer = KotlinxSerializer(json)
+        }
+    }
+
     client.on<ReadyEvent> {
         println(
             "Invite this bot to your guild: https://discord.com/api/oauth2/authorize?client_id=${client.selfId.asString}&scope=bot&permissions=${
@@ -89,11 +95,6 @@ I will then answer with a link to your private w2g.tv room.""".trimIndent()
         if (match != null) {
             val url = match.value
 
-            val httpClient = HttpClient(CIO) {
-                install(JsonFeature) {
-                    this.serializer = KotlinxSerializer(json)
-                }
-            }
             val answer = httpClient.post<WatchTogetherResponse>(W2G_API_URL) {
                 contentType(ContentType.Application.Json)
                 body = WatchTogetherRequest(config.w2gToken, url)
