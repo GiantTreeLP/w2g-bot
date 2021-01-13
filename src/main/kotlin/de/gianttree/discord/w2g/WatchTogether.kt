@@ -2,6 +2,7 @@ package de.gianttree.discord.w2g
 
 import de.gianttree.discord.w2g.api.WatchTogetherRequest
 import de.gianttree.discord.w2g.api.WatchTogetherResponse
+import de.gianttree.discord.w2g.logging.W2GFormatter
 import dev.kord.common.entity.AllowedMentionType
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
@@ -26,6 +27,8 @@ import io.ktor.util.KtorExperimentalAPI
 import kotlinx.serialization.*
 import kotlinx.serialization.json.Json
 import java.io.File
+import java.util.*
+import java.util.logging.*
 
 const val W2G_API_URL = "https://w2g.tv/rooms/create.json"
 
@@ -39,6 +42,13 @@ private val urlRegex =
     "^(?:(?:(?:https?|ftp):)?//)(?:\\S+(?::\\S*)?@)?(?:(?!(?:10|127)(?:\\.\\d{1,3}){3})(?!(?:169\\.254|192\\.168)(?:\\.\\d{1,3}){2})(?!172\\.(?:1[6-9]|2\\d|3[0-1])(?:\\.\\d{1,3}){2})(?:[1-9]\\d?|1\\d\\d|2[01]\\d|22[0-3])(?:\\.(?:1?\\d{1,2}|2[0-4]\\d|25[0-5])){2}(?:\\.(?:[1-9]\\d?|1\\d\\d|2[0-4]\\d|25[0-4]))|(?:(?:[a-z0-9\\u00a1-\\uffff][a-z0-9\\u00a1-\\uffff_-]{0,62})?[a-z0-9\\u00a1-\\uffff]\\.)+(?:[a-z\\u00a1-\\uffff]{2,}\\.?))(?::\\d{2,5})?(?:[/?#]\\S*)?$".toRegex(
         RegexOption.IGNORE_CASE
     )
+
+private val logger = Logger.getLogger("w2g").apply {
+    this.useParentHandlers = false
+    this.addHandler(ConsoleHandler().apply {
+        this.formatter = W2GFormatter()
+    })
+}
 
 @KtorExperimentalAPI
 suspend fun main() {
@@ -58,7 +68,7 @@ suspend fun main() {
     }
 
     client.on<ReadyEvent> {
-        println(
+        logger.info(
             "Invite this bot to your guild: https://discord.com/api/oauth2/authorize?client_id=${client.selfId.asString}&scope=bot&permissions=${
                 Permissions(
                     Permission.ViewChannel,
@@ -110,17 +120,17 @@ I will then answer with a link to your private w2g.tv room.""".trimIndent()
                 }
             }
 
-            println("Room ${answer.streamKey} created for guild ${this.guildId?.asString}")
+            logger.info("Room ${answer.streamKey} created for guild ${this.guildId?.asString}")
 
         }
     }
 
     client.on<GuildCreateEvent> {
-        println("Guild became available: ${this.guild.name}")
+        logger.info("Guild became available: ${this.guild.name}")
     }
 
     client.on<GuildDeleteEvent> {
-        println("Guild became unavailable: ${this.guild?.name} (${this.guildId.asString}, unavailable: ${this.unavailable})")
+        logger.info("Guild became unavailable: ${this.guild?.name} (${this.guildId.asString}, unavailable: ${this.unavailable})")
     }
 
     client.login {
