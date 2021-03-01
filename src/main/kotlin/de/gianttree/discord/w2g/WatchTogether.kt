@@ -24,6 +24,8 @@ import io.ktor.client.request.post
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.util.KtorExperimentalAPI
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.*
 import kotlinx.serialization.*
 import kotlinx.serialization.json.Json
 import java.io.File
@@ -50,6 +52,7 @@ private val logger = Logger.getLogger("w2g").apply {
     })
 }
 
+@FlowPreview
 @KtorExperimentalAPI
 suspend fun main() {
     val config = readConfig()
@@ -133,6 +136,12 @@ I will then answer with a link to your private w2g.tv room.""".trimIndent()
         logger.info("Guild became unavailable: ${this.guild?.name} (${this.guildId.asString}, unavailable: ${this.unavailable})")
     }
 
+    client.events
+        .filter { it is GuildCreateEvent || it is GuildDeleteEvent }
+        .debounce(1000)
+        .onEach { client.updatePresence() }
+        .launchIn(client)
+
     client.login {
         watching("your 📺 reactions!")
     }
@@ -161,6 +170,12 @@ private fun readConfig(): Config {
         )
 
         return config
+    }
+}
+
+private suspend fun Kord.updatePresence() {
+    this.editPresence {
+        this.watching("together on ${this@updatePresence.guilds.count()} guilds! 📺")
     }
 }
 
