@@ -133,7 +133,7 @@ I will then answer with a link to your private w2g.tv room.""".trimIndent()
     }
 
     client.on<GuildCreateEvent> {
-        logger.info("Guild became available: ${this.guild.name}")
+        logger.info("Guild became available: ${this.guild.name} (${this.guild.id.asString})")
     }
 
     client.on<GuildDeleteEvent> {
