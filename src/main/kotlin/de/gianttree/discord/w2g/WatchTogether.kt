@@ -127,7 +127,7 @@ I will then answer with a link to your private w2g.tv room.""".trimIndent()
 
             message.addReaction(ReactionEmoji.Unicode(TV_EMOTE))
 
-            logger.info("Room ${answer.streamKey} created for guild ${this.guildId?.asString}")
+            logger.info("Room ${answer.streamKey} created for guild ${this.guildId?.asString} (${this.getGuild()?.name}) and user ${this.user.mention}")
 
         }
     }
