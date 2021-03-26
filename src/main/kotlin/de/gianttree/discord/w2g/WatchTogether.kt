@@ -9,6 +9,7 @@ import dev.kord.common.entity.Permissions
 import dev.kord.core.Kord
 import dev.kord.core.behavior.reply
 import dev.kord.core.enableEvent
+import dev.kord.core.entity.ReactionEmoji
 import dev.kord.core.event.gateway.ReadyEvent
 import dev.kord.core.event.guild.GuildCreateEvent
 import dev.kord.core.event.guild.GuildDeleteEvent
@@ -33,6 +34,7 @@ import java.util.*
 import java.util.logging.*
 
 const val W2G_API_URL = "https://w2g.tv/rooms/create.json"
+const val TV_EMOTE = "📺"
 
 private val json = Json {
     encodeDefaults = true
@@ -100,7 +102,7 @@ I will then answer with a link to your private w2g.tv room.""".trimIndent()
     }
 
     client.on<ReactionAddEvent> {
-        if (this.emoji.name != "📺") {
+        if (this.emoji.name != TV_EMOTE || this.userId == client.selfId) {
             return@on
         }
 
@@ -122,6 +124,8 @@ I will then answer with a link to your private w2g.tv room.""".trimIndent()
                     add(AllowedMentionType.UserMentions)
                 }
             }
+
+            message.addReaction(ReactionEmoji.Unicode(TV_EMOTE))
 
             logger.info("Room ${answer.streamKey} created for guild ${this.guildId?.asString}")
 
