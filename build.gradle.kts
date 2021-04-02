@@ -21,13 +21,15 @@ dependencies {
     val kordVersion = "0.7.0-SNAPSHOT"
     val slf4jVersion = "1.7.30"
 
+    val junitVersion = "5.7.1"
+
     implementation("dev.kord", "kord-core", kordVersion)
     implementation("org.slf4j", "slf4j-api", slf4jVersion)
     implementation("org.slf4j", "slf4j-jdk14", slf4jVersion)
 
     testImplementation(kotlin("test-junit5"))
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.1")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.7.1")
+    testImplementation("org.junit.jupiter", "junit-jupiter-api", junitVersion)
+    testRuntimeOnly("org.junit.jupiter", "junit-jupiter-engine", junitVersion)
 }
 
 application {
