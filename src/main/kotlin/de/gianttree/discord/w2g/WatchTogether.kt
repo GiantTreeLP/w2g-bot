@@ -33,7 +33,6 @@ import java.util.*
 import java.util.logging.*
 
 const val W2G_API_URL = "https://w2g.tv/rooms/create.json"
-const val TV_EMOTE = "📺"
 
 //language=Markdown
 const val helpText = """
@@ -56,7 +55,7 @@ internal val urlRegex =
         RegexOption.IGNORE_CASE
     )
 
-internal val TV_REACTION = ReactionEmoji.Unicode(TV_EMOTE)
+internal val TV_REACTION = ReactionEmoji.Unicode("📺")
 
 private val logger = Logger.getLogger("w2g").apply {
     this.useParentHandlers = false
@@ -107,7 +106,7 @@ suspend fun main() {
     }
 
     client.on<ReactionAddEvent> {
-        if (this.emoji.name != TV_EMOTE || this.userId == client.selfId) {
+        if (this.emoji != TV_REACTION || this.userId == client.selfId) {
             return@on
         }
 
