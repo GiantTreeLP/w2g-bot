@@ -17,14 +17,13 @@ import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.event.message.ReactionAddEvent
 import dev.kord.core.on
 import dev.kord.gateway.Intents
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.cio.CIO
-import io.ktor.client.features.json.JsonFeature
-import io.ktor.client.features.json.serializer.KotlinxSerializer
-import io.ktor.client.request.post
-import io.ktor.http.ContentType
-import io.ktor.http.contentType
-import io.ktor.util.KtorExperimentalAPI
+import io.ktor.client.*
+import io.ktor.client.engine.cio.*
+import io.ktor.client.features.json.*
+import io.ktor.client.features.json.serializer.*
+import io.ktor.client.request.*
+import io.ktor.http.*
+import io.ktor.util.*
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
 import kotlinx.serialization.*
@@ -35,6 +34,16 @@ import java.util.logging.*
 
 const val W2G_API_URL = "https://w2g.tv/rooms/create.json"
 const val TV_EMOTE = "📺"
+
+//language=Markdown
+const val helpText = """
+__**📺 Usage:**__
+
+1. Send a message containing at least one link/url.
+2. React to that message using the 📺 emote.
+
+I will then answer with a link to your private w2g.tv room.
+"""
 
 private val json = Json {
     encodeDefaults = true
@@ -47,15 +56,7 @@ internal val urlRegex =
         RegexOption.IGNORE_CASE
     )
 
-//language=Markdown
-const val helpText = """
-__**📺 Usage:**__
-
-1. Send a message containing at least one link/url.
-2. React to that message using the 📺 emote.
-
-I will then answer with a link to your private w2g.tv room.
-"""
+internal val TV_REACTION = ReactionEmoji.Unicode(TV_EMOTE)
 
 private val logger = Logger.getLogger("w2g").apply {
     this.useParentHandlers = false
@@ -129,10 +130,18 @@ suspend fun main() {
                 }
             }
 
-            message.addReaction(ReactionEmoji.Unicode(TV_EMOTE))
+            message.addReaction(TV_REACTION)
 
             logger.info("Room ${answer.streamKey} created for guild ${this.guildId?.asString} (${this.getGuild()?.name}) and user ${this.user.mention}")
-
+        } else {
+            message.reply {
+                content = "${this@on.user.mention} I could not find a url in the message you reacted to!"
+                allowedMentions {
+                    repliedUser = false
+                    add(AllowedMentionType.UserMentions)
+                }
+            }
+            logger.info("No room created to message '${message.content}'!")
         }
     }
 
