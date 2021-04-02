@@ -47,6 +47,16 @@ internal val urlRegex =
         RegexOption.IGNORE_CASE
     )
 
+//language=Markdown
+const val helpText = """
+__**📺 Usage:**__
+
+1. Send a message containing at least one link/url.
+2. React to that message using the 📺 emote.
+
+I will then answer with a link to your private w2g.tv room.
+"""
+
 private val logger = Logger.getLogger("w2g").apply {
     this.useParentHandlers = false
     this.addHandler(ConsoleHandler().apply {
@@ -89,13 +99,7 @@ suspend fun main() {
         when (this.message.content) {
             self.mention, "<@!${self.id.asString}>" -> {
                 this.message.reply {
-                    //language=Markdown
-                    content = """__**📺 Usage:**__
-    
-1. Send a message containing at least one link/url.
-2. React to that message using the 📺 emote.
-
-I will then answer with a link to your private w2g.tv room.""".trimIndent()
+                    content = helpText
                 }
             }
         }
