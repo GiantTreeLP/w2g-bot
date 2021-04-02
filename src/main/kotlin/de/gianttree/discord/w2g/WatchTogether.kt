@@ -74,6 +74,10 @@ suspend fun main() {
             enableEvent<MessageCreateEvent>()
             enableEvent<ReactionAddEvent>()
         }
+
+        cache {
+            messages(lruCache(100))
+        }
     }
 
     val httpClient = HttpClient(CIO) {
