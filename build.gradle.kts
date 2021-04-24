@@ -9,10 +9,6 @@ plugins {
 
 repositories {
     mavenCentral()
-    jcenter()
-    maven {
-        url = uri("https://dl.bintray.com/kordlib/Kord")
-    }
     maven("https://oss.sonatype.org/content/repositories/snapshots")
 }
 

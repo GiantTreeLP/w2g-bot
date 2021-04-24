@@ -2,10 +2,9 @@ package de.gianttree.discord.w2g.logging
 
 import java.io.PrintWriter
 import java.io.StringWriter
-import java.text.DateFormat
-import java.time.*
+import java.time.Instant
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import java.util.*
 import java.util.logging.LogRecord
 import java.util.logging.SimpleFormatter
 
