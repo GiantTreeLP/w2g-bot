@@ -17,7 +17,7 @@ dependencies {
     val kordVersion = "0.7.0-RC3"
     val slf4jVersion = "1.7.30"
 
-    val junitVersion = "5.7.1"
+    val junitVersion = "5.7.2"
 
     implementation("dev.kord", "kord-core", kordVersion)
     implementation("org.slf4j", "slf4j-api", slf4jVersion)
