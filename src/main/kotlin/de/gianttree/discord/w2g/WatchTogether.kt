@@ -151,7 +151,7 @@ suspend fun main() {
     }
 
     client.on<GuildCreateEvent> {
-        logger.info("Guild became available: ${this.guild.name} (${this.guild.id.asString})")
+        logger.info("Guild became available: ${this.guild.name} (${this.guild.id.asString}, ${this.guild.memberCount ?: 0} members)")
     }
 
     client.on<GuildDeleteEvent> {
@@ -197,7 +197,13 @@ private fun readConfig(): Config {
 
 private suspend fun Kord.updatePresence() {
     this.editPresence {
-        this.watching("together on ${this@updatePresence.guilds.count()} guilds! 📺")
+        this.watching(
+            "together on ${this@updatePresence.guilds.count()} guilds with ${
+                (this@updatePresence.guilds.map { it.memberCount ?: 0 }
+                    .reduce { accumulator, count -> accumulator + count }
+                        / 10) * 10 // Round to nearest 10
+            } members! 📺"
+        )
     }
 }
 
