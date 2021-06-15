@@ -23,7 +23,6 @@ import io.ktor.client.features.json.*
 import io.ktor.client.features.json.serializer.*
 import io.ktor.client.request.*
 import io.ktor.http.*
-import io.ktor.util.*
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
@@ -35,6 +34,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.File
 import java.util.logging.ConsoleHandler
+import java.util.logging.Level
 import java.util.logging.Logger
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
@@ -66,8 +66,10 @@ internal val TV_REACTION = ReactionEmoji.Unicode("📺")
 
 private val logger = Logger.getLogger("w2g").apply {
     this.useParentHandlers = false
+    this.level = Level.ALL
     this.addHandler(ConsoleHandler().apply {
         this.formatter = W2GFormatter()
+        this.level = Level.ALL
     })
 }
 
@@ -163,6 +165,15 @@ suspend fun main() {
         logger.info("Guild became unavailable: ${this.guild?.name} (${this.guildId.asString}, unavailable: ${this.unavailable})")
     }
 
+    client.on<ReadyEvent> {
+        launch {
+            while (this.isActive) {
+                delay(Duration.minutes(5))
+                client.updatePresence()
+            }
+        }
+    }
+
     client.events
         .filter { it is GuildCreateEvent || it is GuildDeleteEvent }
         .debounce(1000)
@@ -171,13 +182,6 @@ suspend fun main() {
 
     client.login {
         watching("your 📺 reactions!")
-
-        client.launch {
-            while (client.coroutineContext.isActive) {
-                delay(Duration.minutes(5))
-                client.updatePresence()
-            }
-        }
     }
 }
 
@@ -209,13 +213,10 @@ private fun readConfig(): Config {
 
 private suspend fun Kord.updatePresence() {
     this.editPresence {
-        this.watching(
-            "together on ${this@updatePresence.guilds.count()} guilds with ${
-                (this@updatePresence.guilds.map { it.memberCount ?: 0 }
-                    .reduce { accumulator, count -> accumulator + count }
-                        / 10) * 10 // Round to nearest 10
-            } members! 📺"
-        )
+        val guildCount = this@updatePresence.guilds.count()
+        val memberCount = (this@updatePresence.guilds.map { it.getPreviewOrNull()?.approximateMemberCount ?: 0 }
+            .reduce { accumulator, count -> accumulator + count } / 10) * 10
+        this.watching("together on $guildCount guilds with $memberCount members! 📺")
     }
 }
 
