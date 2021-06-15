@@ -25,7 +25,10 @@ import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.util.*
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
@@ -33,6 +36,8 @@ import kotlinx.serialization.json.Json
 import java.io.File
 import java.util.logging.ConsoleHandler
 import java.util.logging.Logger
+import kotlin.time.Duration
+import kotlin.time.ExperimentalTime
 
 const val W2G_API_URL = "https://w2g.tv/rooms/create.json"
 
@@ -66,8 +71,8 @@ private val logger = Logger.getLogger("w2g").apply {
     })
 }
 
+@ExperimentalTime
 @FlowPreview
-@KtorExperimentalAPI
 suspend fun main() {
     val config = readConfig()
     val client = Kord(config.discordToken) {
@@ -166,6 +171,13 @@ suspend fun main() {
 
     client.login {
         watching("your 📺 reactions!")
+
+        client.launch {
+            while (client.coroutineContext.isActive) {
+                delay(Duration.minutes(5))
+                client.updatePresence()
+            }
+        }
     }
 }
 
