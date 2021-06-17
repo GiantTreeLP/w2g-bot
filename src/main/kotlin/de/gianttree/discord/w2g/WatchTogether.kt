@@ -49,6 +49,9 @@ __**📺 Usage:**__
 2. React to that message using the 📺 emote.
 
 I will then answer with a link to your private w2g.tv room.
+
+If you want to share suggestions for improvement or have any issues with the bot, join the support guild (<https://discord.com/invite/aNYCTeEDNp>).  
+
 """
 
 private val json = Json {
