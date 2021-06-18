@@ -14,7 +14,7 @@ repositories {
 
 dependencies {
 
-    val kordVersion = "kotlin-1.5-SNAPSHOT"
+    val kordVersion = "0.7.0"
     val slf4jVersion = "1.7.30"
 
     val junitVersion = "5.7.2"
