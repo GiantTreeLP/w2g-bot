@@ -25,7 +25,9 @@ import io.ktor.client.request.*
 import io.ktor.http.*
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.count
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.reduce
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
@@ -177,12 +179,6 @@ suspend fun main() {
         }
     }
 
-    client.events
-        .filter { it is GuildCreateEvent || it is GuildDeleteEvent }
-        .debounce(1000)
-        .onEach { client.updatePresence() }
-        .launchIn(client)
-
     client.login {
         watching("your 📺 reactions!")
     }
@@ -217,7 +213,10 @@ private fun readConfig(): Config {
 private suspend fun Kord.updatePresence() {
     this.editPresence {
         val guildCount = this@updatePresence.guilds.count()
-        val memberCount = (this@updatePresence.guilds.map { it.getPreviewOrNull()?.approximateMemberCount ?: 0 }
+        val memberCount = (this@updatePresence.guilds.map {
+            delay(1000)
+            it.getPreviewOrNull()?.approximateMemberCount ?: 0
+        }
             .reduce { accumulator, count -> accumulator + count } / 10) * 10
         this.watching("together on $guildCount guilds with $memberCount members! 📺")
     }
