@@ -213,12 +213,7 @@ private fun readConfig(): Config {
 private suspend fun Kord.updatePresence() {
     this.editPresence {
         val guildCount = this@updatePresence.guilds.count()
-        val memberCount = (this@updatePresence.guilds.map {
-            delay(1000)
-            it.getPreviewOrNull()?.approximateMemberCount ?: 0
-        }
-            .reduce { accumulator, count -> accumulator + count } / 10) * 10
-        this.watching("together on $guildCount guilds with $memberCount members! 📺")
+        this.watching("together on $guildCount guilds! 📺")
     }
 }
 
