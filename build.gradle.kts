@@ -15,7 +15,7 @@ repositories {
 dependencies {
 
     val kordVersion = "0.7.4"
-    val slf4jVersion = "1.7.31"
+    val slf4jVersion = "1.7.32"
 
     val junitVersion = "5.7.2"
 
