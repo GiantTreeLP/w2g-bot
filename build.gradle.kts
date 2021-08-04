@@ -4,6 +4,9 @@ plugins {
     val kotlinVersion = "1.5.21"
     kotlin("jvm") version kotlinVersion
     kotlin("plugin.serialization") version kotlinVersion
+
+    val detektVersion = "1.18.0-RC2"
+    id("io.gitlab.arturbosch.detekt") version detektVersion
     application
 }
 
@@ -28,6 +31,17 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter", "junit-jupiter-engine", junitVersion)
 }
 
+detekt {
+    buildUponDefaultConfig = true
+
+    reports {
+        html.enabled = true
+        xml.enabled = true
+        txt.enabled = true
+        sarif.enabled = true
+    }
+}
+
 application {
     // Define the main class for the application.
     mainClass.set("de.gianttree.discord.w2g.WatchTogetherKt")
@@ -39,4 +53,8 @@ tasks.test {
 
 tasks.withType<KotlinCompile>() {
     kotlinOptions.jvmTarget = "11"
+}
+
+tasks.withType<io.gitlab.arturbosch.detekt.Detekt>() {
+    jvmTarget = "1.8"
 }

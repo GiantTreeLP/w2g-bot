@@ -26,8 +26,6 @@ import io.ktor.http.*
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.count
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.reduce
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
@@ -44,7 +42,7 @@ import kotlin.time.ExperimentalTime
 const val W2G_API_URL = "https://w2g.tv/rooms/create.json"
 
 //language=Markdown
-const val helpText = """
+const val HELP_TEXT = """
 __**📺 Usage:**__
 
 1. Send a message containing at least one link/url.
@@ -52,7 +50,8 @@ __**📺 Usage:**__
 
 I will then answer with a link to your private w2g.tv room.
 
-If you want to share suggestions for improvement or have any issues with the bot, join the support guild (<https://discord.com/invite/aNYCTeEDNp>).  
+If you want to share suggestions for improvement or have any issues with the bot, join the support guild
+(<https://discord.com/invite/aNYCTeEDNp>).  
 
 """
 
@@ -63,7 +62,11 @@ private val json = Json {
 }
 
 internal val urlRegex =
-    "(?:(?:(?:https?|ftp):)?//)(?:\\S+(?::\\S*)?@)?(?:(?!(?:10|127)(?:\\.\\d{1,3}){3})(?!(?:169\\.254|192\\.168)(?:\\.\\d{1,3}){2})(?!172\\.(?:1[6-9]|2\\d|3[0-1])(?:\\.\\d{1,3}){2})(?:[1-9]\\d?|1\\d\\d|2[01]\\d|22[0-3])(?:\\.(?:1?\\d{1,2}|2[0-4]\\d|25[0-5])){2}(?:\\.(?:[1-9]\\d?|1\\d\\d|2[0-4]\\d|25[0-4]))|(?:(?:[a-z0-9\\u00a1-\\uffff][a-z0-9\\u00a1-\\uffff_-]{0,62})?[a-z0-9\\u00a1-\\uffff]\\.)+(?:[a-z\\u00a1-\\uffff]{2,}\\.?))(?::\\d{2,5})?(?:[/?#]\\S*)?".toRegex(
+    """(?:(?:https?|ftp):)?//(?:\S+(?::\S*)?@)?(?:(?!(?:10|127)(?:\.\d{1,3}){3})
+        |(?!(?:169\.254|192\.168)(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})
+        |(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}
+        |\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4])|(?:[a-z0-9\u00a1-\uffff][a-z0-9\u00a1-\uffff_-]{0,62}
+        |?[a-z0-9\u00a1-\uffff]\.)+[a-z\u00a1-\uffff]{2,}\.?)(?::\d{2,5})?(?:[/?#]\S*)?""".trimMargin().toRegex(
         RegexOption.IGNORE_CASE
     )
 
@@ -78,6 +81,9 @@ private val logger = Logger.getLogger("w2g").apply {
     })
 }
 
+internal const val GUILD_UPDATE_DELAY_MINUTES = 5
+internal const val MESSAGE_CACHE_SIZE = 100
+
 @ExperimentalTime
 @FlowPreview
 suspend fun main() {
@@ -90,7 +96,7 @@ suspend fun main() {
         }
 
         cache {
-            messages(lruCache(100))
+            messages(lruCache(MESSAGE_CACHE_SIZE))
         }
     }
 
@@ -100,80 +106,23 @@ suspend fun main() {
         }
     }
 
-    client.on<ReadyEvent> {
-        logger.info(
-            "Invite this bot to your guild: https://discord.com/api/oauth2/authorize?client_id=${client.selfId.asString}&scope=bot&permissions=${
-                Permissions(
-                    Permission.ViewChannel,
-                    Permission.SendMessages,
-                    Permission.ReadMessageHistory,
-                ).code.value
-            }"
-        )
-    }
+    client.on<ReadyEvent>(consumer = ReadyEvent::sendReadyMessage)
 
-    client.on<MessageCreateEvent> {
-        val self = client.getSelf()
-        when (this.message.content) {
-            self.mention, "<@!${self.id.asString}>" -> {
-                this.message.reply {
-                    content = helpText
-                }
-            }
-        }
-    }
+    client.on<MessageCreateEvent>(consumer = MessageCreateEvent::sendHelp)
 
     client.on<ReactionAddEvent> {
-        if (this.emoji != TV_REACTION || this.userId == client.selfId) {
-            return@on
-        }
-
-        val message = this.getMessage()
-        val match = urlRegex.find(message.content)
-        if (match != null) {
-            val url = match.value
-
-            val answer = httpClient.post<WatchTogetherResponse>(W2G_API_URL) {
-                contentType(ContentType.Application.Json)
-                body = WatchTogetherRequest(config.w2gToken, url)
-            }
-
-            message.reply {
-                content =
-                    "${this@on.user.mention} Room created! Watch here: <https://w2g.tv/rooms/${answer.streamKey}>!"
-                allowedMentions {
-                    repliedUser = false
-                    add(AllowedMentionType.UserMentions)
-                }
-            }
-
-            message.addReaction(TV_REACTION)
-
-            logger.info("Room ${answer.streamKey} created for guild ${this.guildId?.asString} (${this.getGuild()?.name}) and user ${this.user.mention}")
-        } else {
-            message.reply {
-                content = "${this@on.user.mention} I could not find a url in the message you reacted to!"
-                allowedMentions {
-                    repliedUser = false
-                    add(AllowedMentionType.UserMentions)
-                }
-            }
-            logger.info("No room created to message '${message.content}'!")
-        }
+        handleTvReaction(httpClient, config)
     }
 
-    client.on<GuildCreateEvent> {
-        logger.info("Guild became available: ${this.guild.name} (${this.guild.id.asString}, ${this.guild.memberCount ?: 0} members)")
-    }
+    client.on<GuildCreateEvent>(consumer = GuildCreateEvent::logGuildCreate)
 
-    client.on<GuildDeleteEvent> {
-        logger.info("Guild became unavailable: ${this.guild?.name} (${this.guildId.asString}, unavailable: ${this.unavailable})")
-    }
+    client.on<GuildDeleteEvent>(consumer = GuildDeleteEvent::logGuildDelete)
 
     client.on<ReadyEvent> {
         launch {
             while (this.isActive) {
-                delay(Duration.minutes(5))
+                val guildUpdateDelay = Duration.minutes(GUILD_UPDATE_DELAY_MINUTES)
+                delay(guildUpdateDelay)
                 client.updatePresence()
             }
         }
@@ -182,6 +131,90 @@ suspend fun main() {
     client.login {
         watching("your 📺 reactions!")
     }
+}
+
+private suspend fun ReactionAddEvent.handleTvReaction(
+    httpClient: HttpClient,
+    config: Config
+) {
+    if (this.emoji != TV_REACTION || this.userId == this.kord.selfId) {
+        return
+    }
+
+    val message = this.getMessage()
+    val match = urlRegex.find(message.content)
+    if (match != null) {
+        val url = match.value
+
+        val answer = httpClient.post<WatchTogetherResponse>(W2G_API_URL) {
+            contentType(ContentType.Application.Json)
+            body = WatchTogetherRequest(config.w2gToken, url)
+        }
+
+        message.reply {
+            content =
+                "${this@handleTvReaction.user.mention} Room created! " +
+                        "Watch here: <https://w2g.tv/rooms/${answer.streamKey}>!"
+            allowedMentions {
+                repliedUser = false
+                add(AllowedMentionType.UserMentions)
+            }
+        }
+
+        message.addReaction(TV_REACTION)
+
+        logger.info(
+            "Room ${answer.streamKey} created for guild " +
+                    "${this.guildId?.asString} (${this.getGuild()?.name}) and user ${this.user.mention}"
+        )
+    } else {
+        message.reply {
+            content = "${this@handleTvReaction.user.mention} I could not find a url in the message you reacted to!"
+            allowedMentions {
+                repliedUser = false
+                add(AllowedMentionType.UserMentions)
+            }
+        }
+        logger.info("No room created to message '${message.content}'!")
+    }
+}
+
+private fun ReadyEvent.sendReadyMessage() {
+    logger.info(
+        "Invite this bot to your guild: https://discord.com/api/oauth2/authorize?client_id=" +
+                "${this.kord.selfId.asString}&scope=bot&permissions=${
+                    Permissions(
+                        Permission.ViewChannel,
+                        Permission.SendMessages,
+                        Permission.ReadMessageHistory,
+                    ).code.value
+                }"
+    )
+}
+
+private suspend fun MessageCreateEvent.sendHelp() {
+    val self = this.kord.getSelf()
+    when (this.message.content) {
+        self.mention, "<@!${self.id.asString}>" -> {
+            this.message.reply {
+                content = HELP_TEXT
+            }
+        }
+    }
+}
+
+private fun GuildCreateEvent.logGuildCreate() {
+    logger.info(
+        "Guild became available: ${this.guild.name} " +
+                "(${this.guild.id.asString}, ${this.guild.memberCount ?: 0} members)"
+    )
+}
+
+private fun GuildDeleteEvent.logGuildDelete() {
+    logger.info(
+        "Guild became unavailable: ${this.guild?.name}" +
+                " (${this.guildId.asString}, unavailable: ${this.unavailable})"
+    )
 }
 
 

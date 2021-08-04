@@ -8,7 +8,12 @@ class UrlRegexTest {
 
     @Test
     fun prependedText() {
-        assertNotNull(urlRegex.find("Mango hat es doch noch geschafft rechtzeitig https://www.youtube.com/watch?v=DryGQNvfM7c"))
+        assertNotNull(
+            urlRegex.find(
+                "Mango hat es doch noch geschafft rechtzeitig" +
+                        " https://www.youtube.com/watch?v=DryGQNvfM7c"
+            )
+        )
     }
 
     @Test
