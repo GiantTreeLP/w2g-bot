@@ -17,17 +17,18 @@ import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.event.message.ReactionAddEvent
 import dev.kord.core.on
 import dev.kord.gateway.Intents
+import dev.kord.rest.builder.message.create.allowedMentions
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.features.json.*
 import io.ktor.client.features.json.serializer.*
 import io.ktor.client.request.*
 import io.ktor.http.*
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
@@ -85,7 +86,7 @@ internal const val GUILD_UPDATE_DELAY_MINUTES = 5
 internal const val MESSAGE_CACHE_SIZE = 100
 
 @ExperimentalTime
-@FlowPreview
+@ExperimentalSerializationApi
 suspend fun main() {
     val config = readConfig()
     val client = Kord(config.discordToken) {
@@ -218,6 +219,7 @@ private fun GuildDeleteEvent.logGuildDelete() {
 }
 
 
+@ExperimentalSerializationApi
 private fun readConfig(): Config {
     val configFile = File("config.json")
 
