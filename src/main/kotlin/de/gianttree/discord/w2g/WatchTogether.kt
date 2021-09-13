@@ -3,6 +3,7 @@ package de.gianttree.discord.w2g
 import de.gianttree.discord.w2g.api.WatchTogetherRequest
 import de.gianttree.discord.w2g.api.WatchTogetherResponse
 import de.gianttree.discord.w2g.logging.W2GFormatter
+import de.gianttree.discord.w2g.monitoring.launchMonitoringServer
 import dev.kord.common.entity.AllowedMentionType
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
@@ -29,7 +30,6 @@ import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -106,6 +106,8 @@ suspend fun main() {
             this.serializer = KotlinxSerializer(json)
         }
     }
+
+    launchMonitoringServer(config, client)
 
     client.on<ReadyEvent>(consumer = ReadyEvent::sendReadyMessage)
 
@@ -252,8 +254,3 @@ private suspend fun Kord.updatePresence() {
     }
 }
 
-@Serializable
-data class Config(
-    val discordToken: String = "YOUR_DISCORD_TOKEN_HERE",
-    val w2gToken: String = "YOUR_W2G_TOKEN_HERE"
-)
