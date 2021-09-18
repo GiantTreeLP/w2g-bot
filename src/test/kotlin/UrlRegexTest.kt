@@ -14,11 +14,18 @@ class UrlRegexTest {
                         " https://www.youtube.com/watch?v=DryGQNvfM7c"
             )
         )
+        assertNotNull(
+            urlRegex.find(
+                "Mango hat es doch noch geschafft rechtzeitig" +
+                        " https://m.youtube.com/watch?v=DryGQNvfM7c"
+            )
+        )
     }
 
     @Test
     fun onlyUrl() {
         assertNotNull(urlRegex.find("https://www.youtube.com/watch?v=DryGQNvfM7c"))
+        assertNotNull(urlRegex.find("https://m.youtube.com/watch?v=DryGQNvfM7c"))
     }
 
     @Test
