@@ -84,11 +84,13 @@ private val logger = Logger.getLogger("w2g").apply {
     })
 }
 
-private val debugGuild = Snowflake(854032399145762856)
-
 internal const val GUILD_UPDATE_DELAY_MINUTES = 5
 internal const val MESSAGE_CACHE_SIZE = 100
 internal const val URLS_PER_UPDATE = 50
+internal const val SUPPORT_GUILD = 854032399145762856
+
+private val debugGuild = Snowflake(SUPPORT_GUILD)
+
 
 @ExperimentalTime
 @ExperimentalSerializationApi
@@ -174,7 +176,8 @@ private suspend fun ReactionAddEvent.handleTvReaction(
         message.reply {
             content =
                 "${this@handleTvReaction.user.mention} Room created! " +
-                        "Watch here: <https://w2g.tv/rooms/${response.streamKey}>!" + if (config.debugMode) " (debug)" else ""
+                        "Watch here: <https://w2g.tv/rooms/${response.streamKey}>!" +
+                        if (config.debugMode) " (debug)" else ""
             allowedMentions {
                 repliedUser = false
                 add(AllowedMentionType.UserMentions)
