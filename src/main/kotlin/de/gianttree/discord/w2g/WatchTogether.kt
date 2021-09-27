@@ -1,12 +1,13 @@
 package de.gianttree.discord.w2g
 
-import de.gianttree.discord.w2g.api.WatchTogetherRequest
-import de.gianttree.discord.w2g.api.WatchTogetherResponse
+import de.gianttree.discord.w2g.api.CreateRoom
+import de.gianttree.discord.w2g.api.UpdatePlaylist
 import de.gianttree.discord.w2g.logging.W2GFormatter
 import de.gianttree.discord.w2g.monitoring.launchMonitoringServer
 import dev.kord.common.entity.AllowedMentionType
 import dev.kord.common.entity.Permission
 import dev.kord.common.entity.Permissions
+import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
 import dev.kord.core.behavior.reply
 import dev.kord.core.enableEvent
@@ -23,8 +24,6 @@ import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.features.json.*
 import io.ktor.client.features.json.serializer.*
-import io.ktor.client.request.*
-import io.ktor.http.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.isActive
@@ -85,8 +84,11 @@ private val logger = Logger.getLogger("w2g").apply {
     })
 }
 
+private val debugGuild = Snowflake(854032399145762856)
+
 internal const val GUILD_UPDATE_DELAY_MINUTES = 5
 internal const val MESSAGE_CACHE_SIZE = 100
+internal const val URLS_PER_UPDATE = 50
 
 @ExperimentalTime
 @ExperimentalSerializationApi
@@ -126,7 +128,7 @@ suspend fun main() {
 
     client.on<ReadyEvent> {
         launch {
-            while (this.isActive) {
+            while (this.isActive && !config.debugMode) {
                 val guildUpdateDelay = Duration.minutes(GUILD_UPDATE_DELAY_MINUTES)
                 delay(guildUpdateDelay)
                 client.updatePresence()
@@ -135,7 +137,9 @@ suspend fun main() {
     }
 
     client.login {
-        watching("your 📺 reactions!")
+        if (!config.debugMode) {
+            watching("your 📺 reactions!")
+        }
     }
 }
 
@@ -143,24 +147,34 @@ private suspend fun ReactionAddEvent.handleTvReaction(
     httpClient: HttpClient,
     config: Config
 ) {
+    if (config.debugMode && this.guildId != debugGuild) {
+        return
+    }
+
     if (this.emoji != TV_REACTION || this.userId == this.kord.selfId) {
         return
     }
 
     val message = this.getMessage()
-    val match = urlRegex.find(message.content)
-    if (match != null) {
-        val url = match.value
+    val matches = urlRegex.findAll(message.content).toMutableList()
 
-        val answer = httpClient.post<WatchTogetherResponse>(W2G_API_URL) {
-            contentType(ContentType.Application.Json)
-            body = WatchTogetherRequest(config.w2gToken, url)
+    if (matches.isNotEmpty()) {
+
+        val url = matches.removeFirst().value
+        val response = CreateRoom.call(httpClient, config, url)
+
+        matches.map { it.value }.windowed(URLS_PER_UPDATE, URLS_PER_UPDATE, partialWindows = true).forEach {
+            UpdatePlaylist.call(
+                httpClient,
+                response.streamKey,
+                UpdatePlaylist.Request(config.w2gToken, it)
+            )
         }
 
         message.reply {
             content =
                 "${this@handleTvReaction.user.mention} Room created! " +
-                        "Watch here: <https://w2g.tv/rooms/${answer.streamKey}>!"
+                        "Watch here: <https://w2g.tv/rooms/${response.streamKey}>!" + if (config.debugMode) " (debug)" else ""
             allowedMentions {
                 repliedUser = false
                 add(AllowedMentionType.UserMentions)
@@ -170,7 +184,7 @@ private suspend fun ReactionAddEvent.handleTvReaction(
         message.addReaction(TV_REACTION)
 
         logger.info(
-            "Room ${answer.streamKey} created for guild " +
+            "Room ${response.streamKey} created for guild " +
                     "${this.guildId?.asString} (${this.getGuild()?.name}) and user ${this.user.mention}"
         )
     } else {
