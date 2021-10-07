@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    val kotlinVersion = "1.5.21"
+    val kotlinVersion = "1.5.31"
     kotlin("jvm") version kotlinVersion
     kotlin("plugin.serialization") version kotlinVersion
 
@@ -17,7 +17,7 @@ repositories {
 
 dependencies {
 
-    val kordVersion = "0.8.0-M5"
+    val kordVersion = "0.8.0-M6"
     val slf4jVersion = "1.7.32"
     val ktorVersion = "1.6.4"
 

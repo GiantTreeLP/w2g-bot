@@ -97,12 +97,6 @@ private val debugGuild = Snowflake(SUPPORT_GUILD)
 suspend fun main() {
     val config = readConfig()
     val client = Kord(config.discordToken) {
-        intents = Intents {
-            enableEvent<GuildCreateEvent>()
-            enableEvent<MessageCreateEvent>()
-            enableEvent<ReactionAddEvent>()
-        }
-
         cache {
             messages(lruCache(MESSAGE_CACHE_SIZE))
         }
@@ -139,8 +133,15 @@ suspend fun main() {
     }
 
     client.login {
+        intents = Intents {
+            enableEvent<GuildCreateEvent>()
+            enableEvent<MessageCreateEvent>()
+            enableEvent<ReactionAddEvent>()
+        }
         if (!config.debugMode) {
-            watching("your 📺 reactions!")
+            presence {
+                watching("your 📺 reactions!")
+            }
         }
     }
 }
