@@ -57,7 +57,7 @@ tasks.test {
 }
 
 tasks.withType<KotlinCompile>() {
-    kotlinOptions.jvmTarget = "11"
+    kotlinOptions.jvmTarget = "16"
 }
 
 tasks.withType<io.gitlab.arturbosch.detekt.Detekt>() {
