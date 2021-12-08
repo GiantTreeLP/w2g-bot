@@ -19,7 +19,7 @@ dependencies {
 
     val kordVersion = "0.8.0-M8"
     val slf4jVersion = "1.7.32"
-    val ktorVersion = "1.6.6"
+    val ktorVersion = "1.6.7"
 
     val junitVersion = "5.8.2"
 
