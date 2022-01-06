@@ -36,7 +36,7 @@ import java.io.File
 import java.util.logging.ConsoleHandler
 import java.util.logging.Level
 import java.util.logging.Logger
-import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.ExperimentalTime
 
 const val W2G_API_URL = "https://w2g.tv/rooms/create.json"
@@ -125,7 +125,7 @@ suspend fun main() {
     client.on<ReadyEvent> {
         launch {
             while (this.isActive && !config.debugMode) {
-                val guildUpdateDelay = Duration.minutes(GUILD_UPDATE_DELAY_MINUTES)
+                val guildUpdateDelay = GUILD_UPDATE_DELAY_MINUTES.minutes
                 delay(guildUpdateDelay)
                 client.updatePresence()
             }
@@ -137,6 +137,7 @@ suspend fun main() {
             enableEvent<GuildCreateEvent>()
             enableEvent<MessageCreateEvent>()
             enableEvent<ReactionAddEvent>()
+
         }
         if (!config.debugMode) {
             presence {
@@ -189,7 +190,7 @@ private suspend fun ReactionAddEvent.handleTvReaction(
 
         logger.info(
             "Room ${response.streamKey} created for guild " +
-                    "${this.guildId?.asString} (${this.getGuild()?.name}) and user ${this.user.mention}"
+                    "${this.guildId?.toString()} (${this.getGuild()?.name}) and user ${this.user.mention}"
         )
     } else {
         message.reply {
@@ -206,7 +207,7 @@ private suspend fun ReactionAddEvent.handleTvReaction(
 private fun ReadyEvent.sendReadyMessage() {
     logger.info(
         "Invite this bot to your guild: https://discord.com/api/oauth2/authorize?client_id=" +
-                "${this.kord.selfId.asString}&scope=bot&permissions=${
+                "${this.kord.selfId}&scope=bot&permissions=${
                     Permissions(
                         Permission.ViewChannel,
                         Permission.SendMessages,
@@ -219,7 +220,7 @@ private fun ReadyEvent.sendReadyMessage() {
 private suspend fun MessageCreateEvent.sendHelp() {
     val self = this.kord.getSelf()
     when (this.message.content) {
-        self.mention, "<@!${self.id.asString}>" -> {
+        self.mention, "<@!${self.id}>" -> {
             this.message.reply {
                 content = HELP_TEXT
             }
@@ -230,14 +231,14 @@ private suspend fun MessageCreateEvent.sendHelp() {
 private fun GuildCreateEvent.logGuildCreate() {
     logger.info(
         "Guild became available: ${this.guild.name} " +
-                "(${this.guild.id.asString}, ${this.guild.memberCount ?: 0} members)"
+                "(${this.guild.id}, ${this.guild.memberCount ?: 0} members)"
     )
 }
 
 private fun GuildDeleteEvent.logGuildDelete() {
     logger.info(
         "Guild became unavailable: ${this.guild?.name}" +
-                " (${this.guildId.asString}, unavailable: ${this.unavailable})"
+                " (${this.guildId}, unavailable: ${this.unavailable})"
     )
 }
 

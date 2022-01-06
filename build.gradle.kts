@@ -1,11 +1,12 @@
+import io.gitlab.arturbosch.detekt.Detekt
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    val kotlinVersion = "1.5.31"
+    val kotlinVersion = "1.6.10"
     kotlin("jvm") version kotlinVersion
     kotlin("plugin.serialization") version kotlinVersion
 
-    val detektVersion = "1.18.0"
+    val detektVersion = "1.19.0"
     id("io.gitlab.arturbosch.detekt") version detektVersion
     application
 }
@@ -38,13 +39,6 @@ dependencies {
 
 detekt {
     buildUponDefaultConfig = true
-
-    reports {
-        html.enabled = true
-        xml.enabled = true
-        txt.enabled = true
-        sarif.enabled = true
-    }
 }
 
 application {
@@ -57,9 +51,15 @@ tasks.test {
 }
 
 tasks.withType<KotlinCompile>() {
-    kotlinOptions.jvmTarget = "16"
+    kotlinOptions.jvmTarget = "17"
 }
 
-tasks.withType<io.gitlab.arturbosch.detekt.Detekt>() {
+tasks.withType<Detekt>() {
     jvmTarget = "1.8"
+    reports {
+        html.required.set(true)
+        xml.required.set(true)
+        txt.required.set(true)
+        sarif.required.set(true)
+    }
 }
