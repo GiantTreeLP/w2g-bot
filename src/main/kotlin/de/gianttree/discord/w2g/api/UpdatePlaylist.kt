@@ -1,6 +1,7 @@
 package de.gianttree.discord.w2g.api
 
 import io.ktor.client.*
+import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 import kotlinx.serialization.SerialName
@@ -19,10 +20,10 @@ object UpdatePlaylist {
     }
 
     suspend fun call(client: HttpClient, streamKey: String, request: Request) {
-        client.post<String>("https://w2g.tv/rooms/$streamKey/playlists/current/playlist_items/sync_update") {
+        client.post("https://w2g.tv/rooms/$streamKey/playlists/current/playlist_items/sync_update") {
             contentType(ContentType.Application.Json)
-            accept(ContentType.Application.Json)
-            body = request
-        }.also { println(it) }
+            headers.append(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+            setBody(request)
+        }.body<String>().also { println(it) }
     }
 }

@@ -3,6 +3,7 @@ package de.gianttree.discord.w2g.api
 import de.gianttree.discord.w2g.Config
 import de.gianttree.discord.w2g.W2G_API_URL
 import io.ktor.client.*
+import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 import kotlinx.serialization.SerialName
@@ -46,7 +47,7 @@ object CreateRoom {
     suspend fun call(httpClient: HttpClient, config: Config, url: String): Response {
         return httpClient.post(W2G_API_URL) {
             contentType(ContentType.Application.Json)
-            body = Request(config.w2gToken, url)
-        }
+            setBody(Request(config.w2gToken, url))
+        }.body()
     }
 }

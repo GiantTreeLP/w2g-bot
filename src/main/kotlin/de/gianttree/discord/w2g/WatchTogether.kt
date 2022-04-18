@@ -22,8 +22,8 @@ import dev.kord.gateway.Intents
 import dev.kord.rest.builder.message.create.allowedMentions
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
-import io.ktor.client.features.json.*
-import io.ktor.client.features.json.serializer.*
+import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.isActive
@@ -103,8 +103,8 @@ suspend fun main() {
     }
 
     val httpClient = HttpClient(CIO) {
-        install(JsonFeature) {
-            this.serializer = KotlinxSerializer(json)
+        install(ContentNegotiation) {
+            json()
         }
     }
 

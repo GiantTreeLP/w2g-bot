@@ -18,9 +18,9 @@ repositories {
 
 dependencies {
 
-    val kordVersion = "0.8.0-M12"
+    val kordVersion = "0.8.0-M13"
     val slf4jVersion = "1.7.36"
-    val ktorVersion = "1.6.8"
+    val ktorVersion = "2.0.0"
 
     val junitVersion = "5.8.2"
 
@@ -30,7 +30,8 @@ dependencies {
 
     implementation("io.ktor", "ktor-server-core", ktorVersion)
     implementation("io.ktor", "ktor-server-cio", ktorVersion)
-    implementation("io.ktor", "ktor-serialization", ktorVersion)
+    implementation("io.ktor", "ktor-server-content-negotiation", ktorVersion)
+    implementation("io.ktor", "ktor-serialization-kotlinx-json", ktorVersion)
 
     testImplementation(kotlin("test-junit5"))
     testImplementation("org.junit.jupiter", "junit-jupiter-api", junitVersion)
