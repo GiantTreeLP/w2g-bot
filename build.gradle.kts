@@ -6,7 +6,7 @@ plugins {
     kotlin("jvm") version kotlinVersion
     kotlin("plugin.serialization") version kotlinVersion
 
-    val detektVersion = "1.20.0"
+    val detektVersion = "1.21.0"
     id("io.gitlab.arturbosch.detekt") version detektVersion
     application
 }
