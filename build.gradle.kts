@@ -22,7 +22,7 @@ dependencies {
     val slf4jVersion = "1.7.36"
     val ktorVersion = "2.0.3"
 
-    val junitVersion = "5.8.2"
+    val junitVersion = "5.9.0"
 
     implementation("dev.kord", "kord-core", kordVersion)
     implementation("org.slf4j", "slf4j-api", slf4jVersion)
