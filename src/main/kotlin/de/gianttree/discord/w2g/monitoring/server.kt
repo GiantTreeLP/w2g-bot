@@ -10,6 +10,8 @@ import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.coroutines.flow.count
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.reduce
 import kotlinx.datetime.*
 import kotlinx.serialization.Serializable
 import java.lang.management.ManagementFactory
@@ -37,7 +39,8 @@ fun launchMonitoringServer(config: Config, client: Kord) {
                         client.resources.shards.totalShards,
                         client.gateway.gateways.size,
                         client.gateway.gateways.mapValues { it.value.ping.value?.toDateTimePeriod() },
-                        client.guilds.count()
+                        client.guilds.count(),
+                        client.guilds.map { it.memberCount ?: 0 }.reduce(Int::plus),
                     )
                 )
             }
@@ -54,4 +57,5 @@ data class Status(
     val numGateways: Int,
     val pings: Map<Int, DateTimePeriod?>,
     val numGuilds: Int,
+    val approxMemberCount: Int,
 )
