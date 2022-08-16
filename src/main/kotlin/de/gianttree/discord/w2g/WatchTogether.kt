@@ -3,6 +3,7 @@ package de.gianttree.discord.w2g
 import de.gianttree.discord.w2g.api.CreateRoom
 import de.gianttree.discord.w2g.api.UpdatePlaylist
 import de.gianttree.discord.w2g.logging.W2GFormatter
+import de.gianttree.discord.w2g.monitoring.GuildMemberCount
 import de.gianttree.discord.w2g.monitoring.launchMonitoringServer
 import dev.kord.common.entity.AllowedMentionType
 import dev.kord.common.entity.Permission
@@ -25,9 +26,9 @@ import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
@@ -84,10 +85,11 @@ private val logger = Logger.getLogger("w2g").apply {
     })
 }
 
-internal const val GUILD_UPDATE_DELAY_MINUTES = 5
 internal const val MESSAGE_CACHE_SIZE = 100
 internal const val URLS_PER_UPDATE = 50
 internal const val SUPPORT_GUILD = 854032399145762856
+internal val GUILD_UPDATE_DELAY = 5.minutes
+internal val UPDATE_INTERVAL = 2.minutes
 
 private val debugGuild = Snowflake(SUPPORT_GUILD)
 
@@ -95,7 +97,15 @@ private val debugGuild = Snowflake(SUPPORT_GUILD)
 @ExperimentalTime
 @ExperimentalSerializationApi
 suspend fun main() {
+
+    val guildMembers = mutableMapOf<Snowflake, GuildMemberCount>()
     val config = readConfig()
+
+    logger.level = when (config.debugMode) {
+        true -> Level.ALL
+        false -> Level.INFO
+    }
+
     val client = Kord(config.discordToken) {
         cache {
             messages(lruCache(MESSAGE_CACHE_SIZE))
@@ -108,7 +118,7 @@ suspend fun main() {
         }
     }
 
-    launchMonitoringServer(config, client)
+    launchMonitoringServer(config, client, guildMembers)
 
     client.on<ReadyEvent>(consumer = ReadyEvent::sendReadyMessage)
 
@@ -118,16 +128,33 @@ suspend fun main() {
         handleTvReaction(httpClient, config)
     }
 
-    client.on<GuildCreateEvent>(consumer = GuildCreateEvent::logGuildCreate)
+    client.on<GuildCreateEvent> {
+        this.logGuildCreate()
+        this.addGuild(guildMembers)
+    }
 
-    client.on<GuildDeleteEvent>(consumer = GuildDeleteEvent::logGuildDelete)
+    client.on<GuildDeleteEvent> {
+        this.logGuildDelete()
+        this.removeGuild(guildMembers)
+    }
 
     client.on<ReadyEvent> {
         launch {
             while (this.isActive && !config.debugMode) {
-                val guildUpdateDelay = GUILD_UPDATE_DELAY_MINUTES.minutes
-                delay(guildUpdateDelay)
-                client.updatePresence()
+                delay(GUILD_UPDATE_DELAY)
+                client.updatePresence(guildMembers)
+            }
+        }
+        launch {
+            while (this.isActive) {
+                delay(UPDATE_INTERVAL)
+                guildMembers.minWithOrNull(compareBy { it.value.lastUpdate })?.let {
+                    logger.finest("Updating guild ${it.key}")
+                    client.getGuildPreviewOrNull(it.key)?.let { guild ->
+                        logger.finest("Guild ${guild.name} (${guild.id}) has ${guild.approximateMemberCount} members")
+                        guildMembers[guild.id] = GuildMemberCount(Clock.System.now(), guild.approximateMemberCount)
+                    }
+                }
             }
         }
     }
@@ -145,6 +172,14 @@ suspend fun main() {
             }
         }
     }
+}
+
+private fun GuildDeleteEvent.removeGuild(guildMembers: MutableMap<Snowflake, GuildMemberCount>) {
+    guildMembers.remove(this.guildId)
+}
+
+private fun GuildCreateEvent.addGuild(guildMembers: MutableMap<Snowflake, GuildMemberCount>) {
+    guildMembers[this.guild.id] = GuildMemberCount(Clock.System.now(), this.guild.memberCount ?: 0)
 }
 
 private suspend fun ReactionAddEvent.handleTvReaction(
@@ -269,9 +304,9 @@ private fun readConfig(): Config {
     }
 }
 
-private suspend fun Kord.updatePresence() {
+private suspend fun Kord.updatePresence(guildMembers: MutableMap<Snowflake, GuildMemberCount>) {
     this.editPresence {
-        val guildCount = this@updatePresence.guilds.count()
+        val guildCount = guildMembers.count()
         this.watching("together on $guildCount guilds! 📺")
     }
 }

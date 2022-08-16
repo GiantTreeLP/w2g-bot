@@ -1,6 +1,7 @@
 package de.gianttree.discord.w2g.monitoring
 
 import de.gianttree.discord.w2g.Config
+import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
@@ -10,15 +11,13 @@ import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.coroutines.flow.count
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.reduce
 import kotlinx.datetime.*
 import kotlinx.serialization.Serializable
 import java.lang.management.ManagementFactory
 import kotlin.time.ExperimentalTime
 
 @ExperimentalTime
-fun launchMonitoringServer(config: Config, client: Kord) {
+fun launchMonitoringServer(config: Config, client: Kord, guildMembers: MutableMap<Snowflake, GuildMemberCount>) {
     val runtimeMXBean = ManagementFactory.getRuntimeMXBean()
     embeddedServer(CIO, port = config.httpPort) {
         install(ContentNegotiation) {
@@ -40,7 +39,7 @@ fun launchMonitoringServer(config: Config, client: Kord) {
                         client.gateway.gateways.size,
                         client.gateway.gateways.mapValues { it.value.ping.value?.toDateTimePeriod() },
                         client.guilds.count(),
-                        client.guilds.map { it.memberCount ?: 0 }.reduce(Int::plus),
+                        guildMembers.values.sumOf(GuildMemberCount::memberCount),
                     )
                 )
             }
