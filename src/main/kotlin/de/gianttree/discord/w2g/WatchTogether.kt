@@ -4,6 +4,7 @@ import de.gianttree.discord.w2g.api.CreateRoom
 import de.gianttree.discord.w2g.api.UpdatePlaylist
 import de.gianttree.discord.w2g.logging.W2GFormatter
 import de.gianttree.discord.w2g.monitoring.GuildMemberCount
+import de.gianttree.discord.w2g.monitoring.RoomCounter
 import de.gianttree.discord.w2g.monitoring.launchMonitoringServer
 import dev.kord.common.entity.AllowedMentionType
 import dev.kord.common.entity.Permission
@@ -30,10 +31,6 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
-import java.io.File
 import java.util.logging.ConsoleHandler
 import java.util.logging.Level
 import java.util.logging.Logger
@@ -56,11 +53,6 @@ If you want to share suggestions for improvement or have any issues with the bot
 
 """
 
-private val json = Json {
-    encodeDefaults = true
-    prettyPrint = true
-    ignoreUnknownKeys = true
-}
 
 @Suppress("RegExpUnnecessaryNonCapturingGroup")
 internal val urlRegex =
@@ -118,46 +110,11 @@ suspend fun main() {
         }
     }
 
-    launchMonitoringServer(config, client, guildMembers)
+    val context = Context(logger, config, guildMembers, RoomCounter.load(), client, httpClient)
 
-    client.on<ReadyEvent>(consumer = ReadyEvent::sendReadyMessage)
+    launchMonitoringServer(context)
 
-    client.on<MessageCreateEvent>(consumer = MessageCreateEvent::sendHelp)
-
-    client.on<ReactionAddEvent> {
-        handleTvReaction(httpClient, config)
-    }
-
-    client.on<GuildCreateEvent> {
-        this.logGuildCreate()
-        this.addGuild(guildMembers)
-    }
-
-    client.on<GuildDeleteEvent> {
-        this.logGuildDelete()
-        this.removeGuild(guildMembers)
-    }
-
-    client.on<ReadyEvent> {
-        launch {
-            while (this.isActive && !config.debugMode) {
-                delay(GUILD_UPDATE_DELAY)
-                client.updatePresence(guildMembers)
-            }
-        }
-        launch {
-            while (this.isActive) {
-                delay(UPDATE_INTERVAL)
-                guildMembers.minWithOrNull(compareBy { it.value.lastUpdate })?.let {
-                    logger.finest("Updating guild ${it.key}")
-                    client.getGuildPreviewOrNull(it.key)?.let { guild ->
-                        logger.finest("Guild ${guild.name} (${guild.id}) has ${guild.approximateMemberCount} members")
-                        guildMembers[guild.id] = GuildMemberCount(Clock.System.now(), guild.approximateMemberCount)
-                    }
-                }
-            }
-        }
-    }
+    registerEvents(context)
 
     client.login {
         intents = Intents {
@@ -166,7 +123,7 @@ suspend fun main() {
             enableEvent<ReactionAddEvent>()
 
         }
-        if (!config.debugMode) {
+        if (!context.config.debugMode) {
             presence {
                 watching("your 📺 reactions!")
             }
@@ -174,19 +131,61 @@ suspend fun main() {
     }
 }
 
-private fun GuildDeleteEvent.removeGuild(guildMembers: MutableMap<Snowflake, GuildMemberCount>) {
-    guildMembers.remove(this.guildId)
-}
-
-private fun GuildCreateEvent.addGuild(guildMembers: MutableMap<Snowflake, GuildMemberCount>) {
-    guildMembers[this.guild.id] = GuildMemberCount(Clock.System.now(), this.guild.memberCount ?: 0)
-}
-
-private suspend fun ReactionAddEvent.handleTvReaction(
-    httpClient: HttpClient,
-    config: Config
+private fun registerEvents(
+    context: Context,
 ) {
-    if (config.debugMode && this.guildId != debugGuild) {
+    context.client.on<ReadyEvent>(consumer = ReadyEvent::sendReadyMessage)
+
+    context.client.on<MessageCreateEvent>(consumer = MessageCreateEvent::sendHelp)
+
+    context.client.on<ReactionAddEvent> {
+        handleTvReaction(context)
+    }
+
+    context.client.on<GuildCreateEvent> {
+        this.logGuildCreate()
+        this.addGuild(context)
+    }
+
+    context.client.on<GuildDeleteEvent> {
+        this.logGuildDelete()
+        this.removeGuild(context)
+    }
+
+    context.client.on<ReadyEvent> {
+        launch {
+            while (this.isActive && !context.config.debugMode) {
+                delay(GUILD_UPDATE_DELAY)
+                context.client.updatePresence(context)
+                context.roomCounter.save()
+            }
+        }
+        launch {
+            while (this.isActive) {
+                delay(UPDATE_INTERVAL)
+                context.guildMembers.minWithOrNull(compareBy { it.value.lastUpdate })?.let {
+                    logger.finest("Updating guild ${it.key}")
+                    context.client.getGuildPreviewOrNull(it.key)?.let { guild ->
+                        logger.finest("Guild ${guild.name} (${guild.id}) has ${guild.approximateMemberCount} members")
+                        context.guildMembers[guild.id] =
+                            GuildMemberCount(Clock.System.now(), guild.approximateMemberCount)
+                    }
+                }
+            }
+        }
+    }
+}
+
+private fun GuildDeleteEvent.removeGuild(context: Context) {
+    context.guildMembers.remove(this.guildId)
+}
+
+private fun GuildCreateEvent.addGuild(context: Context) {
+    context.guildMembers[this.guild.id] = GuildMemberCount(Clock.System.now(), this.guild.memberCount ?: 0)
+}
+
+private suspend fun ReactionAddEvent.handleTvReaction(context: Context) {
+    if (context.config.debugMode && this.guildId != debugGuild) {
         return
     }
 
@@ -200,13 +199,13 @@ private suspend fun ReactionAddEvent.handleTvReaction(
     if (matches.isNotEmpty()) {
 
         val url = matches.removeFirst().value
-        val response = CreateRoom.call(httpClient, config, url)
+        val response = CreateRoom.call(context.httpClient, context.config, url)
 
         matches.map { it.value }.windowed(URLS_PER_UPDATE, URLS_PER_UPDATE, partialWindows = true).forEach {
             UpdatePlaylist.call(
-                httpClient,
+                context.httpClient,
                 response.streamKey,
-                UpdatePlaylist.Request(config.w2gToken, it)
+                UpdatePlaylist.Request(context.config.w2gToken, it)
             )
         }
 
@@ -214,7 +213,7 @@ private suspend fun ReactionAddEvent.handleTvReaction(
             content =
                 "${this@handleTvReaction.user.mention} Room created! " +
                         "Watch here: <https://w2g.tv/rooms/${response.streamKey}>!" +
-                        if (config.debugMode) " (debug)" else ""
+                        if (context.config.debugMode) " (debug)" else ""
             allowedMentions {
                 repliedUser = false
                 add(AllowedMentionType.UserMentions)
@@ -222,6 +221,8 @@ private suspend fun ReactionAddEvent.handleTvReaction(
         }
 
         message.addReaction(TV_REACTION)
+
+        context.roomCounter.addRoom()
 
         logger.info(
             "Room ${response.streamKey} created for guild " +
@@ -278,35 +279,9 @@ private fun GuildDeleteEvent.logGuildDelete() {
 }
 
 
-@ExperimentalSerializationApi
-private fun readConfig(): Config {
-    val configFile = File("config.json")
-
-    if (configFile.exists() && configFile.isFile) {
-        val config = json.decodeFromString<Config>(configFile.readText())
-
-        configFile.writeText(json.encodeToString(config))
-
-        return config
-    } else {
-        val config = Config()
-
-        if (configFile.exists()) {
-            configFile.delete()
-        }
-        configFile.createNewFile()
-
-        configFile.writeText(
-            json.encodeToString(config)
-        )
-
-        return config
-    }
-}
-
-private suspend fun Kord.updatePresence(guildMembers: MutableMap<Snowflake, GuildMemberCount>) {
+private suspend fun Kord.updatePresence(context: Context) {
     this.editPresence {
-        val guildCount = guildMembers.count()
+        val guildCount = context.guildMembers.count()
         this.watching("together on $guildCount guilds! 📺")
     }
 }

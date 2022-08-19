@@ -1,8 +1,6 @@
 package de.gianttree.discord.w2g.monitoring
 
-import de.gianttree.discord.w2g.Config
-import dev.kord.common.entity.Snowflake
-import dev.kord.core.Kord
+import de.gianttree.discord.w2g.Context
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.cio.*
@@ -17,9 +15,9 @@ import java.lang.management.ManagementFactory
 import kotlin.time.ExperimentalTime
 
 @ExperimentalTime
-fun launchMonitoringServer(config: Config, client: Kord, guildMembers: MutableMap<Snowflake, GuildMemberCount>) {
+fun launchMonitoringServer(context: Context): CIOApplicationEngine {
     val runtimeMXBean = ManagementFactory.getRuntimeMXBean()
-    embeddedServer(CIO, port = config.httpPort) {
+    return embeddedServer(CIO, port = context.config.httpPort) {
         install(ContentNegotiation) {
             json()
         }
@@ -32,19 +30,19 @@ fun launchMonitoringServer(config: Config, client: Kord, guildMembers: MutableMa
                             runtimeMXBean.startTime
                         ).periodUntil(
                             Instant.fromEpochMilliseconds(runtimeMXBean.startTime)
-                                .plus(runtimeMXBean.uptime, DateTimeUnit.MILLISECOND),
-                            TimeZone.currentSystemDefault()
+                                .plus(runtimeMXBean.uptime, DateTimeUnit.MILLISECOND), TimeZone.currentSystemDefault()
                         ),
-                        client.resources.shards.totalShards,
-                        client.gateway.gateways.size,
-                        client.gateway.gateways.mapValues { it.value.ping.value?.toDateTimePeriod() },
-                        client.guilds.count(),
-                        guildMembers.values.sumOf(GuildMemberCount::memberCount),
+                        context.client.resources.shards.totalShards,
+                        context.client.gateway.gateways.size,
+                        context.client.gateway.gateways.mapValues { it.value.ping.value?.toDateTimePeriod() },
+                        context.client.guilds.count(),
+                        context.guildMembers.values.sumOf(GuildMemberCount::memberCount),
+                        context.roomCounter.rooms
                     )
                 )
             }
         }
-    }.start()
+    }.also { it.start() }
 }
 
 @ExperimentalTime
@@ -57,4 +55,5 @@ data class Status(
     val pings: Map<Int, DateTimePeriod?>,
     val numGuilds: Int,
     val approxMemberCount: Int,
+    val roomCount: Int,
 )
