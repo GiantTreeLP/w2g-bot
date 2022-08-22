@@ -153,14 +153,14 @@ private fun registerEvents(
     }
 
     context.client.on<ReadyEvent> {
-        launch {
+        this.kord.launch {
             while (this.isActive && !context.config.debugMode) {
                 delay(GUILD_UPDATE_DELAY)
                 context.client.updatePresence(context)
                 context.roomCounter.save()
             }
         }
-        launch {
+        this.kord.launch {
             while (this.isActive) {
                 delay(UPDATE_INTERVAL)
                 context.guildMembers.minWithOrNull(compareBy { it.value.lastUpdate })?.let {
