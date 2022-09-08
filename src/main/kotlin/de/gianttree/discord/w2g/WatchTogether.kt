@@ -34,7 +34,6 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import java.util.logging.ConsoleHandler
 import java.util.logging.Level
 import java.util.logging.Logger
-import kotlin.time.Duration.Companion.minutes
 import kotlin.time.ExperimentalTime
 
 const val W2G_API_URL = "https://w2g.tv/rooms/create.json"
@@ -78,10 +77,10 @@ private val logger = Logger.getLogger("w2g").apply {
 }
 
 internal const val MESSAGE_CACHE_SIZE = 100
+
+// Set to 50 in accordance with the W2G.TV API: https://community.w2g.tv/t/faq-how-can-i-access-the-watch2gether-api/149410
 internal const val URLS_PER_UPDATE = 50
 internal const val SUPPORT_GUILD = 854032399145762856
-internal val GUILD_UPDATE_DELAY = 5.minutes
-internal val UPDATE_INTERVAL = 2.minutes
 
 private val debugGuild = Snowflake(SUPPORT_GUILD)
 
@@ -96,6 +95,11 @@ suspend fun main() {
     logger.level = when (config.debugMode) {
         true -> Level.ALL
         false -> Level.INFO
+    }
+
+    if (config.debugMode) {
+        logger.info("Debug mode enabled")
+        logger.finer("Config: $config")
     }
 
     val client = Kord(config.discordToken) {
@@ -155,14 +159,14 @@ private fun registerEvents(
     context.client.on<ReadyEvent> {
         this.kord.launch {
             while (this.isActive && !context.config.debugMode) {
-                delay(GUILD_UPDATE_DELAY)
+                delay(context.config.intervals.presenceInterval)
                 context.client.updatePresence(context)
                 context.roomCounter.save()
             }
         }
         this.kord.launch {
             while (this.isActive) {
-                delay(UPDATE_INTERVAL)
+                delay(context.config.intervals.guildMemberUpdateInterval)
                 context.guildMembers.minWithOrNull(compareBy { it.value.lastUpdate })?.let {
                     logger.finest("Updating guild ${it.key}")
                     context.client.getGuildPreviewOrNull(it.key)?.let { guild ->
