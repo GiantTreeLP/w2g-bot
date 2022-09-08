@@ -2,6 +2,7 @@ package de.gianttree.discord.w2g
 
 import de.gianttree.discord.w2g.api.CreateRoom
 import de.gianttree.discord.w2g.api.UpdatePlaylist
+import de.gianttree.discord.w2g.database.setupDatabaseConnection
 import de.gianttree.discord.w2g.logging.W2GFormatter
 import de.gianttree.discord.w2g.monitoring.GuildMemberCount
 import de.gianttree.discord.w2g.monitoring.RoomCounter
@@ -114,7 +115,9 @@ suspend fun main() {
         }
     }
 
-    val context = Context(logger, config, guildMembers, RoomCounter.load(), client, httpClient)
+    val database = setupDatabaseConnection(config, logger)
+
+    val context = Context(logger, config, guildMembers, RoomCounter.load(), client, httpClient, database)
 
     launchMonitoringServer(context)
 
