@@ -14,11 +14,11 @@ import org.jetbrains.exposed.sql.transactions.experimental.suspendedTransaction
  * be created.
  */
 suspend fun <T> suspendedInTransaction(
-    database: Database? = null,
+    database: Database,
     statement: suspend Transaction.() -> T
 ): T {
     val transaction = TransactionManager.currentOrNull()
-    return if (transaction != null && (database == null || transaction.db == database)) {
+    return if (transaction != null && (transaction.db == database)) {
         transaction.suspendedTransaction(null, statement)
     } else {
         newSuspendedTransaction(null, database, statement = statement)
