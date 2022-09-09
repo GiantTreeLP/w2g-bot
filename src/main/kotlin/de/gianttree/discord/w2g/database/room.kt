@@ -10,6 +10,7 @@ import org.jetbrains.exposed.sql.kotlin.datetime.timestamp
 object Rooms : IntIdTable() {
     val guild = reference("guild", Guilds).index()
     val createdAt = timestamp("created_at").defaultExpression(CurrentTimestamp()).index()
+    val w2gId = varchar("w2g_id", 255)
 }
 
 class Room(id: EntityID<Int>) : IntEntity(id) {
@@ -17,6 +18,7 @@ class Room(id: EntityID<Int>) : IntEntity(id) {
 
     var guild by Guild referencedOn Rooms.guild
     var createdAt by Rooms.createdAt
+    var w2gId by Rooms.w2gId
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
