@@ -182,7 +182,6 @@ private fun registerEvents(
                     logger.finest("Guild ${guild.name} (${guild.id}) has ${guild.approxMemberCount} members")
                     guild.lastUpdate = Clock.System.now().toEpochMilliseconds()
                 }
-//                delay(context.config.intervals.guildMemberUpdateInterval)
             }
         }
     }

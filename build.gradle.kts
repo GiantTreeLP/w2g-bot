@@ -48,8 +48,6 @@ dependencies {
     implementation("org.xerial", "sqlite-jdbc", sqliteVersion)
     implementation("org.mariadb.jdbc", "mariadb-java-client", mariadbVersion)
 
-
-
     testImplementation(kotlin("test-junit5"))
     testImplementation("org.junit.jupiter", "junit-jupiter-api", junitVersion)
     testRuntimeOnly("org.junit.jupiter", "junit-jupiter-engine", junitVersion)
