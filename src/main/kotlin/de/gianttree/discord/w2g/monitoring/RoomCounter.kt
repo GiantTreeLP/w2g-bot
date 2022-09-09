@@ -6,7 +6,7 @@ import de.gianttree.discord.w2g.database.Room
 import de.gianttree.discord.w2g.database.suspendedInTransaction
 import dev.kord.core.entity.Guild as KordGuild
 
-class RoomCounter() {
+class RoomCounter {
 
     suspend fun addRoom(context: Context, kordGuild: KordGuild?, w2gId: String) {
         if (kordGuild == null) return
