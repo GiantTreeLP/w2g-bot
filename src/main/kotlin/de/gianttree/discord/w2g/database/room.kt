@@ -26,6 +26,7 @@ class Room(id: EntityID<Int>) : IntEntity(id) {
 
         if (guild != other.guild) return false
         if (createdAt != other.createdAt) return false
+        if (w2gId != other.w2gId) return false
 
         return true
     }
@@ -33,10 +34,11 @@ class Room(id: EntityID<Int>) : IntEntity(id) {
     override fun hashCode(): Int {
         var result = guild.hashCode()
         result = 31 * result + createdAt.hashCode()
+        result = 31 * result + w2gId.hashCode()
         return result
     }
 
     override fun toString(): String {
-        return "Room(guild=$guild, createdAt=$createdAt)"
+        return "Room(guild=$guild, createdAt=$createdAt, w2gId='$w2gId')"
     }
 }

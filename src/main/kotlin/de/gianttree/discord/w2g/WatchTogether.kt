@@ -117,7 +117,7 @@ suspend fun main() {
 
     val database = setupDatabaseConnection(config, logger)
 
-    val context = Context(logger, config, guildMembers, RoomCounter.load(), client, httpClient, database)
+    val context = Context(logger, config, guildMembers, RoomCounter(), client, httpClient, database)
 
     launchMonitoringServer(context)
 
@@ -164,7 +164,6 @@ private fun registerEvents(
             while (this.isActive && !context.config.debugMode) {
                 delay(context.config.intervals.presenceInterval)
                 context.client.updatePresence(context)
-                context.roomCounter.save()
             }
         }
         this.kord.launch {
@@ -229,7 +228,7 @@ private suspend fun ReactionAddEvent.handleTvReaction(context: Context) {
 
         message.addReaction(TV_REACTION)
 
-        context.roomCounter.addRoom()
+        context.roomCounter.addRoom(context, message.getGuildOrNull(), response.streamKey)
 
         logger.info(
             "Room ${response.streamKey} created for guild " +
