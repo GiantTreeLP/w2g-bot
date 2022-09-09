@@ -9,7 +9,7 @@ import org.jetbrains.exposed.sql.kotlin.datetime.timestamp
 
 object Rooms : IntIdTable() {
     val guild = reference("guild", Guilds).index()
-    val createdAt = timestamp("created_at").defaultExpression(CurrentTimestamp()).index()
+    val createdAt = long("created_at").defaultExpression(CurrentTimestamp()).index()
     val w2gId = varchar("w2g_id", 255)
 }
 

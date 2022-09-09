@@ -2,20 +2,48 @@ package de.gianttree.discord.w2g.database
 
 import dev.kord.common.entity.Snowflake
 import org.jetbrains.exposed.dao.id.EntityID
+import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.kotlin.datetime.CurrentTimestamp
-import org.jetbrains.exposed.sql.kotlin.datetime.timestamp
+import org.jetbrains.exposed.sql.min
+import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.sum
 import dev.kord.core.entity.Guild as KordGuild
 
 object Guilds : SnowflakeIdTable() {
     val name = varchar("name", 100).index()
     val approxMemberCount = integer("approx_member_count")
-    val lastUpdate = timestamp("last_update").defaultExpression(CurrentTimestamp()).index()
+    val lastUpdate = long("last_update").defaultExpression(CurrentTimestamp()).index()
+    val active = bool("active").default(true).index()
+
+    fun getMemberCountSum(): Int {
+        // SUM(approx_member_count)
+        val memberCountSum = approxMemberCount.sum()
+        // SELECT SUM(approx_member_count) FROM guilds WHERE active = true
+        return Guilds.slice(memberCountSum).select { active eq true }.single()[memberCountSum] ?: 0
+    }
+
+    fun getGuildLeastRecentUpdate(): Guild? {
+        // MIN(last_update)
+        val minGroup = lastUpdate.min()
+
+        // SELECT MIN(last_update) FROM guilds WHERE active = true
+        val minSelect = Guilds.slice(minGroup)
+            .select { active eq true }
+            .map { it[minGroup] }.single()
+            ?: return null
+
+        // SELECT * FROM guilds WHERE last_update = minSelect AND active = true
+        val resultSet = Guilds.select { (lastUpdate eq minSelect) and (active eq true) }.firstOrNull() ?: return null
+
+        return Guild.wrapRow(resultSet)
+    }
 }
 
 class Guild(id: EntityID<Snowflake>) : SnowflakeEntity(id) {
     var name by Guilds.name
     var approxMemberCount by Guilds.approxMemberCount
     var lastUpdate by Guilds.lastUpdate
+    var active by Guilds.active
 
     val rooms by Room referrersOn Rooms.guild
 
@@ -35,6 +63,7 @@ class Guild(id: EntityID<Snowflake>) : SnowflakeEntity(id) {
         if (name != other.name) return false
         if (approxMemberCount != other.approxMemberCount) return false
         if (lastUpdate != other.lastUpdate) return false
+        if (active != other.active) return false
 
         return true
     }
@@ -43,11 +72,12 @@ class Guild(id: EntityID<Snowflake>) : SnowflakeEntity(id) {
         var result = name.hashCode()
         result = 31 * result + approxMemberCount
         result = 31 * result + lastUpdate.hashCode()
+        result = 31 * result + active.hashCode()
         return result
     }
 
     override fun toString(): String {
-        return "Guild(name='$name', approxMemberCount=$approxMemberCount, lastUpdate=$lastUpdate)"
+        return "Guild(name='$name', approxMemberCount=$approxMemberCount, lastUpdate=$lastUpdate, active=$active, rooms=$rooms)"
     }
 
 }
