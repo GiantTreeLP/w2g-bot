@@ -1,6 +1,8 @@
 package de.gianttree.discord.w2g.monitoring
 
 import de.gianttree.discord.w2g.Context
+import de.gianttree.discord.w2g.database.Room
+import de.gianttree.discord.w2g.database.suspendedInTransaction
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.cio.*
@@ -37,7 +39,7 @@ fun launchMonitoringServer(context: Context): CIOApplicationEngine {
                         context.client.gateway.gateways.mapValues { it.value.ping.value?.toDateTimePeriod() },
                         context.client.guilds.count(),
                         context.guildMembers.values.sumOf(GuildMemberCount::memberCount),
-                        context.roomCounter.rooms
+                        suspendedInTransaction { Room.count() }
                     )
                 )
             }
@@ -55,5 +57,5 @@ data class Status(
     val pings: Map<Int, DateTimePeriod?>,
     val numGuilds: Int,
     val approxMemberCount: Int,
-    val roomCount: Int,
+    val roomCount: Long,
 )
