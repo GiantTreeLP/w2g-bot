@@ -4,6 +4,7 @@ import dev.kord.common.entity.Snowflake
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.kotlin.datetime.CurrentTimestamp
 import org.jetbrains.exposed.sql.kotlin.datetime.timestamp
+import dev.kord.core.entity.Guild as KordGuild
 
 object Guilds : SnowflakeIdTable() {
     val name = varchar("name", 100).index()
@@ -18,7 +19,14 @@ class Guild(id: EntityID<Snowflake>) : SnowflakeEntity(id) {
 
     val rooms by Room referrersOn Rooms.guild
 
-    companion object : SnowflakeEntityClass<Guild>(Guilds)
+    companion object : SnowflakeEntityClass<Guild>(Guilds) {
+        fun getOrCreate(kordGuild: KordGuild): Guild {
+            return findById(kordGuild.id) ?: new(kordGuild.id) {}.apply {
+                this.name = kordGuild.name
+                this.approxMemberCount = kordGuild.approximateMemberCount ?: 0
+            }
+        }
+    }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
