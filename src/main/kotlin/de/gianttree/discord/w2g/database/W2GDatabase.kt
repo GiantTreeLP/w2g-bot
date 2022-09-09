@@ -7,6 +7,7 @@ import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.statements.StatementContext
 import org.jetbrains.exposed.sql.statements.expandArgs
 import java.util.logging.Logger
+import kotlin.time.Duration.Companion.seconds
 
 suspend fun setupDatabaseConnection(config: Config, logger: Logger): Database {
     val hikariConfig = HikariConfig().apply {
@@ -16,6 +17,7 @@ suspend fun setupDatabaseConnection(config: Config, logger: Logger): Database {
         password = config.databaseConnection.password
         minimumIdle = config.databaseConnection.minIdle
         maximumPoolSize = config.databaseConnection.maxPoolSize
+        leakDetectionThreshold = 5.seconds.inWholeMilliseconds
     }
 
     val hikariDatasource = HikariDataSource(hikariConfig)
