@@ -1,15 +1,14 @@
 package de.gianttree.discord.w2g.database
 
+import kotlinx.datetime.Clock
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
-import org.jetbrains.exposed.sql.kotlin.datetime.CurrentTimestamp
-import org.jetbrains.exposed.sql.kotlin.datetime.timestamp
 
 object Rooms : IntIdTable() {
     val guild = reference("guild", Guilds).index()
-    val createdAt = long("created_at").defaultExpression(CurrentTimestamp()).index()
+    val createdAt = long("created_at").clientDefault { Clock.System.now().toEpochMilliseconds() }.index()
     val w2gId = varchar("w2g_id", 255)
 }
 

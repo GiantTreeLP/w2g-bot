@@ -1,9 +1,9 @@
 package de.gianttree.discord.w2g.database
 
 import dev.kord.common.entity.Snowflake
+import kotlinx.datetime.Clock
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.and
-import org.jetbrains.exposed.sql.kotlin.datetime.CurrentTimestamp
 import org.jetbrains.exposed.sql.min
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.sum
@@ -12,7 +12,7 @@ import dev.kord.core.entity.Guild as KordGuild
 object Guilds : SnowflakeIdTable() {
     val name = varchar("name", 100).index()
     val approxMemberCount = integer("approx_member_count")
-    val lastUpdate = long("last_update").defaultExpression(CurrentTimestamp()).index()
+    val lastUpdate = long("last_update").clientDefault { Clock.System.now().toEpochMilliseconds() }.index()
     val active = bool("active").default(true).index()
 
     fun getMemberCountSum(): Int {
