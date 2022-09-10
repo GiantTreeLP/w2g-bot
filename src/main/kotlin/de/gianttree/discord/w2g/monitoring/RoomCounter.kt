@@ -1,28 +1,20 @@
 package de.gianttree.discord.w2g.monitoring
 
-import java.io.File
+import de.gianttree.discord.w2g.Context
+import de.gianttree.discord.w2g.database.Guild
+import de.gianttree.discord.w2g.database.Room
+import de.gianttree.discord.w2g.database.suspendedInTransaction
+import dev.kord.core.entity.Guild as KordGuild
 
-private const val ROOM_COUNTER_FILENAME = "roomcounter.txt"
+class RoomCounter {
 
-class RoomCounter(rooms: Int = 0) {
-    var rooms: Int = rooms
-        private set
-
-    fun addRoom() {
-        rooms++
-    }
-
-    fun save() {
-        File(ROOM_COUNTER_FILENAME).writeText(rooms.toString())
-    }
-
-    companion object {
-        fun load(): RoomCounter {
-            val fileContent = File(ROOM_COUNTER_FILENAME).takeIf { it.isFile }?.readText() ?: "0"
-            return if (fileContent.matches(Regex("[0-9]+"))) {
-                RoomCounter(fileContent.toInt())
-            } else {
-                RoomCounter()
+    suspend fun addRoom(context: Context, kordGuild: KordGuild?, w2gId: String) {
+        if (kordGuild == null) return
+        suspendedInTransaction(context.database) {
+            val guild = Guild.getOrCreate(kordGuild)
+            Room.new {
+                this.guild = guild
+                this.w2gId = w2gId
             }
         }
     }

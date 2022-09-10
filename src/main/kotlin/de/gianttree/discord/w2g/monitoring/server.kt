@@ -1,6 +1,9 @@
 package de.gianttree.discord.w2g.monitoring
 
 import de.gianttree.discord.w2g.Context
+import de.gianttree.discord.w2g.database.Guilds
+import de.gianttree.discord.w2g.database.Room
+import de.gianttree.discord.w2g.database.suspendedInTransaction
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.cio.*
@@ -8,7 +11,6 @@ import io.ktor.server.engine.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import kotlinx.coroutines.flow.count
 import kotlinx.datetime.*
 import kotlinx.serialization.Serializable
 import java.lang.management.ManagementFactory
@@ -23,23 +25,26 @@ fun launchMonitoringServer(context: Context): CIOApplicationEngine {
         }
         routing {
             get("/") {
-                call.respond(
-                    Status(
-                        Clock.System.now(),
-                        Instant.fromEpochMilliseconds(
-                            runtimeMXBean.startTime
-                        ).periodUntil(
-                            Instant.fromEpochMilliseconds(runtimeMXBean.startTime)
-                                .plus(runtimeMXBean.uptime, DateTimeUnit.MILLISECOND), TimeZone.currentSystemDefault()
-                        ),
-                        context.client.resources.shards.totalShards,
-                        context.client.gateway.gateways.size,
-                        context.client.gateway.gateways.mapValues { it.value.ping.value?.toDateTimePeriod() },
-                        context.client.guilds.count(),
-                        context.guildMembers.values.sumOf(GuildMemberCount::memberCount),
-                        context.roomCounter.rooms
+                suspendedInTransaction(context.database) {
+                    call.respond(
+                        Status(
+                            Clock.System.now(),
+                            Instant.fromEpochMilliseconds(
+                                runtimeMXBean.startTime
+                            ).periodUntil(
+                                Instant.fromEpochMilliseconds(runtimeMXBean.startTime)
+                                    .plus(runtimeMXBean.uptime, DateTimeUnit.MILLISECOND),
+                                TimeZone.currentSystemDefault()
+                            ),
+                            context.client.resources.shards.totalShards,
+                            context.client.gateway.gateways.size,
+                            context.client.gateway.gateways.mapValues { it.value.ping.value?.toDateTimePeriod() },
+                            Guilds.getActiveCount(),
+                            Guilds.getMemberCountSum(),
+                            Room.count()
+                        )
                     )
-                )
+                }
             }
         }
     }.also { it.start() }
@@ -55,5 +60,5 @@ data class Status(
     val pings: Map<Int, DateTimePeriod?>,
     val numGuilds: Int,
     val approxMemberCount: Int,
-    val roomCount: Int,
+    val roomCount: Long,
 )

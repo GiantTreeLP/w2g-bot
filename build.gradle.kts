@@ -22,6 +22,11 @@ dependencies {
     val slf4jVersion = "2.0.0"
     val ktorVersion = "2.1.1"
 
+    val exposedVersion = "0.39.2"
+    val hikariVersion = "5.0.1"
+    val sqliteVersion = "3.39.2.1"
+    val mariadbVersion = "3.0.7"
+
     val junitVersion = "5.9.0"
 
     implementation("dev.kord", "kord-core", kordVersion)
@@ -32,6 +37,16 @@ dependencies {
     implementation("io.ktor", "ktor-server-cio", ktorVersion)
     implementation("io.ktor", "ktor-server-content-negotiation", ktorVersion)
     implementation("io.ktor", "ktor-serialization-kotlinx-json", ktorVersion)
+
+    implementation("org.jetbrains.exposed", "exposed-core", exposedVersion)
+    implementation("org.jetbrains.exposed", "exposed-dao", exposedVersion)
+    implementation("org.jetbrains.exposed", "exposed-jdbc", exposedVersion)
+    implementation("org.jetbrains.exposed", "exposed-kotlin-datetime", exposedVersion)
+
+    implementation("com.zaxxer", "HikariCP", hikariVersion)
+
+    implementation("org.xerial", "sqlite-jdbc", sqliteVersion)
+    implementation("org.mariadb.jdbc", "mariadb-java-client", mariadbVersion)
 
     testImplementation(kotlin("test-junit5"))
     testImplementation("org.junit.jupiter", "junit-jupiter-api", junitVersion)
