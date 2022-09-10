@@ -37,6 +37,10 @@ object Guilds : SnowflakeIdTable() {
 
         return Guild.wrapRow(resultSet)
     }
+
+    fun getActiveCount(): Int {
+        return Guilds.select { active eq true }.count().toInt()
+    }
 }
 
 class Guild(id: EntityID<Snowflake>) : SnowflakeEntity(id) {
