@@ -1,13 +1,8 @@
-package de.gianttree.discord.w2g
+package de.gianttree.discord.w2g.database
 
-import de.gianttree.discord.w2g.database.Guild
-import de.gianttree.discord.w2g.database.Guilds
-import de.gianttree.discord.w2g.database.setupDatabaseConnection
-import de.gianttree.discord.w2g.database.suspendedInTransaction
 import dev.kord.common.entity.Snowflake
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.Clock
-import kotlinx.serialization.ExperimentalSerializationApi
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.deleteAll
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -21,9 +16,8 @@ import kotlin.test.assertTrue
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class GuildQueryTest {
 
-    lateinit var database: Database
+    private lateinit var database: Database
 
-    @OptIn(ExperimentalSerializationApi::class)
     @BeforeAll
     fun setupDatabase() {
         runBlocking {
@@ -52,16 +46,5 @@ class GuildQueryTest {
         transaction(this.database) {
             assertTrue(Guilds.getActiveCount() > 0)
         }
-    }
-
-    companion object {
-        val config = Config(
-            databaseConnection = DatabaseConnection(
-                jdbcUrl = "jdbc:sqlite:mem:test",
-                driver = "org.sqlite.JDBC",
-                maxPoolSize = 1,
-                minIdle = 1,
-            )
-        )
     }
 }
