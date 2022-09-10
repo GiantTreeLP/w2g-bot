@@ -26,7 +26,6 @@ class GuildQueryTest {
     @OptIn(ExperimentalSerializationApi::class)
     @BeforeAll
     fun setupDatabase() {
-        val config = readConfig()
         runBlocking {
             this@GuildQueryTest.database = setupDatabaseConnection(config, Logger.getAnonymousLogger())
             suspendedInTransaction(this@GuildQueryTest.database) {
@@ -53,5 +52,16 @@ class GuildQueryTest {
         transaction(this.database) {
             assertTrue(Guilds.getActiveCount() > 0)
         }
+    }
+
+    companion object {
+        val config = Config(
+            databaseConnection = DatabaseConnection(
+                jdbcUrl = "jdbc:sqlite:mem:test",
+                driver = "org.sqlite.JDBC",
+                maxPoolSize = 1,
+                minIdle = 1,
+            )
+        )
     }
 }
