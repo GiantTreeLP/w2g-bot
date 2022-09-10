@@ -685,3 +685,4 @@ style:
       - 'io.ktor.http.*'
       - 'io.ktor.serialization.*'
       - 'kotlinx.datetime.*'
+      - 'org.jetbrains.exposed.sql.*'

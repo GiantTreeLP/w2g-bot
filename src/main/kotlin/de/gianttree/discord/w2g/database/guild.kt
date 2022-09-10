@@ -9,8 +9,11 @@ import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.sum
 import dev.kord.core.entity.Guild as KordGuild
 
+
+const val MAX_GUILD_NAME_LENGTH = 100
+
 object Guilds : SnowflakeIdTable() {
-    val name = varchar("name", 100).index()
+    val name = varchar("name", MAX_GUILD_NAME_LENGTH).index()
     val approxMemberCount = integer("approx_member_count")
     val lastUpdate = long("last_update").clientDefault { Clock.System.now().toEpochMilliseconds() }.index()
     val active = bool("active").default(true).index()
@@ -81,7 +84,13 @@ class Guild(id: EntityID<Snowflake>) : SnowflakeEntity(id) {
     }
 
     override fun toString(): String {
-        return "Guild(name='$name', approxMemberCount=$approxMemberCount, lastUpdate=$lastUpdate, active=$active, rooms=$rooms)"
+        return "Guild(" +
+                "name='$name', " +
+                "approxMemberCount=$approxMemberCount, " +
+                "lastUpdate=$lastUpdate, " +
+                "active=$active, " +
+                "rooms=$rooms" +
+                ")"
     }
 
 }

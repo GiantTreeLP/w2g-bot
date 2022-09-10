@@ -6,10 +6,12 @@ import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
 
+const val MAX_ROOM_ID_LENGTH = 255
+
 object Rooms : IntIdTable() {
     val guild = reference("guild", Guilds).index()
     val createdAt = long("created_at").clientDefault { Clock.System.now().toEpochMilliseconds() }.index()
-    val w2gId = varchar("w2g_id", 255)
+    val w2gId = varchar("w2g_id", MAX_ROOM_ID_LENGTH)
 }
 
 class Room(id: EntityID<Int>) : IntEntity(id) {
