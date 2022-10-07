@@ -40,7 +40,7 @@ import java.util.logging.Level
 import java.util.logging.Logger
 import kotlin.time.ExperimentalTime
 
-const val W2G_API_URL = "https://w2g.tv/rooms/create.json"
+const val W2G_API_URL = "https://api.w2g.tv/rooms/create.json"
 
 //language=Markdown
 const val HELP_TEXT = """
