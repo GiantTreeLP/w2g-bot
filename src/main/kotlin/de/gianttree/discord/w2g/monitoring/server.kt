@@ -18,36 +18,11 @@ import kotlin.time.ExperimentalTime
 
 @ExperimentalTime
 fun launchMonitoringServer(context: Context): CIOApplicationEngine {
-    val runtimeMXBean = ManagementFactory.getRuntimeMXBean()
-    return embeddedServer(CIO, port = context.config.httpPort) {
-        install(ContentNegotiation) {
-            json()
-        }
-        routing {
-            get("/") {
-                suspendedInTransaction(context.database) {
-                    call.respond(
-                        Status(
-                            Clock.System.now(),
-                            Instant.fromEpochMilliseconds(
-                                runtimeMXBean.startTime
-                            ).periodUntil(
-                                Instant.fromEpochMilliseconds(runtimeMXBean.startTime)
-                                    .plus(runtimeMXBean.uptime, DateTimeUnit.MILLISECOND),
-                                TimeZone.currentSystemDefault()
-                            ),
-                            context.client.resources.shards.totalShards,
-                            context.client.gateway.gateways.size,
-                            context.client.gateway.gateways.mapValues { it.value.ping.value?.toDateTimePeriod() },
-                            Guilds.getActiveCount(),
-                            Guilds.getMemberCountSum(),
-                            Room.count()
-                        )
-                    )
-                }
-            }
-        }
-    }.also { it.start() }
+    return embeddedServer(
+        CIO,
+        port = context.config.httpPort,
+        module = { this.w2GMonitoringModule(context) },
+    ).also { it.start() }
 }
 
 @ExperimentalTime
@@ -62,3 +37,35 @@ data class Status(
     val approxMemberCount: Int,
     val roomCount: Long,
 )
+
+@ExperimentalTime
+fun Application.w2GMonitoringModule(context: Context) {
+    val runtimeMXBean = ManagementFactory.getRuntimeMXBean()
+    install(ContentNegotiation) {
+        json()
+    }
+    routing {
+        get("/") {
+            suspendedInTransaction(context.database) {
+                call.respond(
+                    Status(
+                        Clock.System.now(),
+                        Instant.fromEpochMilliseconds(
+                            runtimeMXBean.startTime
+                        ).periodUntil(
+                            Instant.fromEpochMilliseconds(runtimeMXBean.startTime)
+                                .plus(runtimeMXBean.uptime, DateTimeUnit.MILLISECOND),
+                            TimeZone.currentSystemDefault()
+                        ),
+                        context.client.resources.shards.totalShards,
+                        context.client.gateway.gateways.size,
+                        context.client.gateway.gateways.mapValues { it.value.ping.value?.toDateTimePeriod() },
+                        Guilds.getActiveCount(),
+                        Guilds.getMemberCountSum(),
+                        Room.count()
+                    )
+                )
+            }
+        }
+    }
+}
