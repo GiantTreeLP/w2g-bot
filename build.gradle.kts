@@ -19,7 +19,7 @@ repositories {
 dependencies {
 
     val kordVersion = "0.8.0-M17"
-    val slf4jVersion = "2.0.6"
+    val slf4jVersion = "2.0.7"
     val ktorVersion = "2.2.4"
 
     val exposedVersion = "0.41.1"
