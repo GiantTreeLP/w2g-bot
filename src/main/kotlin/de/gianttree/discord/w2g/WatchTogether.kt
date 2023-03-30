@@ -246,7 +246,7 @@ private suspend fun ReactionAddEvent.handleTvReaction(context: Context) {
 
         logger.info(
             "Room ${response.streamKey} created for guild " +
-                    "${this.guildId?.toString()} (${this.getGuild()?.name}) and user ${this.user.mention}"
+                    "${this.guildId?.toString()} (${this.getGuildOrNull()?.name}) and user ${this.user.mention}"
         )
     } else {
         message.reply {

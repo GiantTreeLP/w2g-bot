@@ -4,8 +4,9 @@ import de.gianttree.discord.w2g.Config
 import de.gianttree.discord.w2g.DatabaseConnection
 
 val config = Config(
+    debugMode = true,
     databaseConnection = DatabaseConnection(
-        jdbcUrl = "jdbc:sqlite:mem:test",
+        jdbcUrl = "jdbc:sqlite::memory:",
         driver = "org.sqlite.JDBC",
         maxPoolSize = 1,
         minIdle = 1,
