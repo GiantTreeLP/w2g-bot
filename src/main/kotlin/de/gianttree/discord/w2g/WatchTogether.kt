@@ -15,6 +15,7 @@ import dev.kord.common.entity.Permissions
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
 import dev.kord.core.behavior.reply
+import dev.kord.core.cache.lruCache
 import dev.kord.core.enableEvent
 import dev.kord.core.entity.ReactionEmoji
 import dev.kord.core.event.gateway.ReadyEvent
