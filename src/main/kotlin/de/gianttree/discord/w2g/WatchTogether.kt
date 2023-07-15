@@ -148,7 +148,7 @@ private fun registerEvents(
     context.client.on<MessageCreateEvent>(consumer = MessageCreateEvent::sendHelp)
 
     context.client.on<ReactionAddEvent> {
-        handleTvReaction(context)
+        this.handleTvReaction(context)
     }
 
     context.client.on<GuildCreateEvent> {
