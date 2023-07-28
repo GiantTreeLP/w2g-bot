@@ -4,7 +4,7 @@ import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.transactions.TransactionManager
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
-import org.jetbrains.exposed.sql.transactions.experimental.suspendedTransaction
+import org.jetbrains.exposed.sql.transactions.experimental.withSuspendTransaction
 
 /**
  * Executes the given suspending [statement] in the current transaction.
@@ -19,7 +19,7 @@ suspend fun <T> suspendedInTransaction(
 ): T {
     val transaction = TransactionManager.currentOrNull()
     return if (transaction != null && (transaction.db == database)) {
-        transaction.suspendedTransaction(null, statement)
+        transaction.withSuspendTransaction(null, statement)
     } else {
         newSuspendedTransaction(null, database, statement = statement)
     }
