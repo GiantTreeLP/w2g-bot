@@ -35,7 +35,8 @@ object Guilds : SnowflakeIdTable() {
 
         // SELECT * FROM guilds WHERE last_update = minSelect AND active = true
         val resultSet =
-            Guilds.select { (lastUpdate eqSubQuery minSelect) and (active eq true) }.firstOrNull() ?: return null
+            Guilds.select { (lastUpdate eqSubQuery minSelect) and (active eq true) }.limit(1).firstOrNull()
+                ?: return null
 
         return Guild.wrapRow(resultSet)
     }
