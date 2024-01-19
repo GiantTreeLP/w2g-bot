@@ -1,11 +1,12 @@
 package de.gianttree.discord.w2g.database
 
-import de.gianttree.discord.w2g.database.Guilds.active
 import dev.kord.common.entity.Snowflake
 import kotlinx.datetime.Clock
 import org.jetbrains.exposed.dao.id.EntityID
-import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.min
+import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.sql.sum
 import dev.kord.core.entity.Guild as KordGuild
 
 
