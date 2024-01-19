@@ -25,7 +25,7 @@ import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.event.message.ReactionAddEvent
 import dev.kord.core.on
 import dev.kord.gateway.Intents
-import dev.kord.rest.builder.message.create.allowedMentions
+import dev.kord.rest.builder.message.allowedMentions
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.contentnegotiation.*
@@ -35,7 +35,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.serialization.ExperimentalSerializationApi
-import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.selectAll
 import java.util.logging.ConsoleHandler
 import java.util.logging.Level
 import java.util.logging.Logger
@@ -303,7 +303,7 @@ private fun GuildDeleteEvent.logGuildDelete() {
 private suspend fun Kord.updatePresence(context: Context) {
     this.editPresence {
         val guildCount = suspendedInTransaction(context.database) {
-            Guilds.select { Guilds.active eq true }.count()
+            Guilds.selectAll().where { Guilds.active eq true }.count()
         }
         this.watching("together on $guildCount guilds! 📺")
     }

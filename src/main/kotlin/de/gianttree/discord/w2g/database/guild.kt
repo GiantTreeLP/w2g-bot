@@ -1,12 +1,11 @@
 package de.gianttree.discord.w2g.database
 
+import de.gianttree.discord.w2g.database.Guilds.active
 import dev.kord.common.entity.Snowflake
 import kotlinx.datetime.Clock
 import org.jetbrains.exposed.dao.id.EntityID
-import org.jetbrains.exposed.sql.and
-import org.jetbrains.exposed.sql.min
-import org.jetbrains.exposed.sql.select
-import org.jetbrains.exposed.sql.sum
+import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import dev.kord.core.entity.Guild as KordGuild
 
 
@@ -22,7 +21,7 @@ object Guilds : SnowflakeIdTable() {
         // SUM(approx_member_count)
         val memberCountSum = approxMemberCount.sum()
         // SELECT SUM(approx_member_count) FROM guilds WHERE active = true
-        return Guilds.slice(memberCountSum).select { active eq true }.single()[memberCountSum] ?: 0
+        return select(memberCountSum).where { active eq true }.single()[memberCountSum] ?: 0
     }
 
     fun getGuildLeastRecentUpdate(): Guild? {
@@ -30,19 +29,19 @@ object Guilds : SnowflakeIdTable() {
         val minGroup = lastUpdate.min()
 
         // SELECT MIN(last_update) FROM guilds WHERE active = true
-        val minSelect = Guilds.slice(minGroup)
-            .select { active eq true }
+        val minSelect = select(minGroup)
+            .where { active eq true }
 
         // SELECT * FROM guilds WHERE last_update = minSelect AND active = true
         val resultSet =
-            Guilds.select { (lastUpdate eqSubQuery minSelect) and (active eq true) }.limit(1).firstOrNull()
+            Guilds.selectAll().where { (lastUpdate eqSubQuery minSelect) and (active eq true) }.limit(1).firstOrNull()
                 ?: return null
 
         return Guild.wrapRow(resultSet)
     }
 
     fun getActiveCount(): Int {
-        return Guilds.select { active eq true }.count().toInt()
+        return Guilds.selectAll().where { active eq true }.count().toInt()
     }
 }
 
