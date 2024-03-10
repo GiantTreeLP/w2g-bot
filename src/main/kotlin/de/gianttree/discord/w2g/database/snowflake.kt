@@ -11,9 +11,9 @@ import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.vendors.currentDialect
 
 open class SnowflakeIdTable : IdTable<Snowflake>() {
-    override val id = snowflake("id").entityId()
+    final override val id = snowflake("id").entityId()
 
-    override val primaryKey by lazy { super.primaryKey ?: PrimaryKey(id) }
+    override val primaryKey = PrimaryKey(id)
 }
 
 open class SnowflakeEntity(id: EntityID<Snowflake>) : Entity<Snowflake>(id)
