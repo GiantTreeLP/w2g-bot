@@ -69,11 +69,11 @@ tasks.test {
 }
 
 tasks.withType<KotlinCompile>() {
-    kotlinOptions.jvmTarget = "17"
+    kotlinOptions.jvmTarget = tasks.withType<JavaCompile>().first().targetCompatibility
 }
 
 tasks.withType<Detekt>() {
-    jvmTarget = "1.8"
+    jvmTarget = tasks.withType<JavaCompile>().first().targetCompatibility
     reports {
         html.required.set(true)
         xml.required.set(true)
