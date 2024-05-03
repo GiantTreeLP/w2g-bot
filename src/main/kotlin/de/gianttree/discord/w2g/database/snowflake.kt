@@ -23,7 +23,7 @@ open class SnowflakeEntityClass<out E : SnowflakeEntity>(table: SnowflakeIdTable
 
 fun Table.snowflake(name: String): Column<Snowflake> = registerColumn(name, SnowflakeColumnType())
 
-class SnowflakeColumnType : ColumnType() {
+class SnowflakeColumnType : ColumnType<Snowflake>() {
     override fun sqlType(): String = currentDialect.dataTypeProvider.longType()
 
     override fun valueFromDB(value: Any): Snowflake {
@@ -35,8 +35,7 @@ class SnowflakeColumnType : ColumnType() {
         }
     }
 
-    override fun notNullValueToDB(value: Any): Any {
-        val v = if (value is Snowflake) value.value.toLong() else value
-        return super.notNullValueToDB(v)
+    override fun notNullValueToDB(value: Snowflake): Any {
+        return value.value.toLong()
     }
 }
