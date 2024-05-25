@@ -81,7 +81,7 @@ tasks.withType<KotlinCompile>() {
 }
 
 tasks.withType<Detekt>() {
-    jvmTarget = tasks.withType<KotlinCompile>().first().compilerOptions.jvmTarget.get().name
+    jvmTarget = tasks.withType<JavaCompile>().first().targetCompatibility
     reports {
         html.required.set(true)
         xml.required.set(true)
