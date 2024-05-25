@@ -71,7 +71,7 @@ tasks.test {
 }
 
 tasks.withType<JavaCompile>() {
-    targetCompatibility = JvmTarget.JVM_21.name
+    targetCompatibility = JavaVersion.VERSION_21.toString()
 }
 
 tasks.withType<KotlinCompile>() {
