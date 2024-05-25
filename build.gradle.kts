@@ -70,6 +70,10 @@ tasks.test {
     useJUnitPlatform()
 }
 
+tasks.withType<JavaCompile>() {
+    targetCompatibility = JvmTarget.JVM_21.name
+}
+
 tasks.withType<KotlinCompile>() {
     compilerOptions {
         jvmTarget = JvmTarget.JVM_21
