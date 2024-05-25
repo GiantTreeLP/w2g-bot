@@ -1,4 +1,5 @@
 import io.gitlab.arturbosch.detekt.Detekt
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -12,13 +13,14 @@ plugins {
 }
 
 repositories {
+    mavenLocal()
     mavenCentral()
     maven("https://oss.sonatype.org/content/repositories/snapshots")
 }
 
 dependencies {
 
-    val kordVersion = "0.13.1"
+    val kordVersion = "0.14.0"
     val slf4jVersion = "2.0.13"
     val ktorVersion = "2.3.11"
 
@@ -68,8 +70,14 @@ tasks.test {
     useJUnitPlatform()
 }
 
+tasks.withType<JavaCompile>() {
+    targetCompatibility = JavaVersion.VERSION_21.toString()
+}
+
 tasks.withType<KotlinCompile>() {
-    kotlinOptions.jvmTarget = tasks.withType<JavaCompile>().first().targetCompatibility
+    compilerOptions {
+        jvmTarget = JvmTarget.JVM_21
+    }
 }
 
 tasks.withType<Detekt>() {

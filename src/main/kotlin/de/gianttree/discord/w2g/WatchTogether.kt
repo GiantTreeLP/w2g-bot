@@ -27,7 +27,7 @@ import dev.kord.core.on
 import dev.kord.gateway.Intents
 import dev.kord.rest.builder.message.allowedMentions
 import io.ktor.client.*
-import io.ktor.client.engine.cio.*
+import io.ktor.client.engine.okhttp.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.delay
@@ -111,7 +111,12 @@ suspend fun main() {
         }
     }
 
-    val httpClient = HttpClient(CIO) {
+    val httpClient = HttpClient(OkHttp) {
+        engine {
+            config {
+                followRedirects(true)
+            }
+        }
         install(ContentNegotiation) {
             json()
         }
