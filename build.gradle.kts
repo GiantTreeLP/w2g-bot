@@ -1,4 +1,5 @@
 import io.gitlab.arturbosch.detekt.Detekt
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -12,6 +13,7 @@ plugins {
 }
 
 repositories {
+    mavenLocal()
     mavenCentral()
     maven("https://oss.sonatype.org/content/repositories/snapshots")
 }
@@ -69,11 +71,13 @@ tasks.test {
 }
 
 tasks.withType<KotlinCompile>() {
-    kotlinOptions.jvmTarget = tasks.withType<JavaCompile>().first().targetCompatibility
+    compilerOptions {
+        jvmTarget = JvmTarget.JVM_21
+    }
 }
 
 tasks.withType<Detekt>() {
-    jvmTarget = tasks.withType<JavaCompile>().first().targetCompatibility
+    jvmTarget = tasks.withType<KotlinCompile>().first().compilerOptions.jvmTarget.get().name
     reports {
         html.required.set(true)
         xml.required.set(true)
