@@ -24,7 +24,7 @@ dependencies {
     val slf4jVersion = "2.0.13"
     val ktorVersion = "2.3.11"
 
-    val exposedVersion = "0.50.1"
+    val exposedVersion = "0.51.0"
     val hikariVersion = "5.1.0"
     val sqliteVersion = "3.46.0.0"
     val mariadbVersion = "3.4.0"
