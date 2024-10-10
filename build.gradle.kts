@@ -22,7 +22,7 @@ dependencies {
 
     val kordVersion = "0.14.0"
     val slf4jVersion = "2.0.16"
-    val ktorVersion = "2.3.12"
+    val ktorVersion = "3.0.0"
 
     val exposedVersion = "0.55.0"
     val hikariVersion = "6.0.0"
