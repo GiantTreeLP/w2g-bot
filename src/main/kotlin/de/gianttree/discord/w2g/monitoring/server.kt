@@ -14,10 +14,8 @@ import io.ktor.server.routing.*
 import kotlinx.datetime.*
 import kotlinx.serialization.Serializable
 import java.lang.management.ManagementFactory
-import kotlin.time.ExperimentalTime
 
-@ExperimentalTime
-fun launchMonitoringServer(context: Context): CIOApplicationEngine {
+fun launchMonitoringServer(context: Context): EmbeddedServer<CIOApplicationEngine, CIOApplicationEngine.Configuration> {
     return embeddedServer(
         CIO,
         port = context.config.httpPort,
@@ -25,7 +23,6 @@ fun launchMonitoringServer(context: Context): CIOApplicationEngine {
     ).also { it.start() }
 }
 
-@ExperimentalTime
 @Serializable
 data class Status(
     val timestamp: Instant,
@@ -38,7 +35,6 @@ data class Status(
     val roomCount: Long,
 )
 
-@ExperimentalTime
 fun Application.w2GMonitoringModule(context: Context) {
     val runtimeMXBean = ManagementFactory.getRuntimeMXBean()
     install(ContentNegotiation) {
