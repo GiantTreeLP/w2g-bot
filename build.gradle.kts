@@ -25,7 +25,7 @@ dependencies {
     val ktorVersion = "3.0.1"
 
     val exposedVersion = "0.56.0"
-    val hikariVersion = "6.2.0"
+    val hikariVersion = "6.2.1"
     val sqliteVersion = "3.47.0.0"
     val mariadbVersion = "3.5.0"
 
