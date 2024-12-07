@@ -91,7 +91,6 @@ private val debugGuild = Snowflake(SUPPORT_GUILD)
 
 
 @ExperimentalTime
-@ExperimentalSerializationApi
 suspend fun main() {
     val config = readConfig()
 

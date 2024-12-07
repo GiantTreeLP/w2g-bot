@@ -43,7 +43,6 @@ data class Intervals(
     val guildMemberUpdateInterval: DurationInSeconds = 2.minutes,
 )
 
-@ExperimentalSerializationApi
 fun readConfig(): Config {
     val configFile = File("config.json")
 
