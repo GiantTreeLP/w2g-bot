@@ -41,6 +41,7 @@ dependencies {
     implementation("io.ktor", "ktor-serialization-kotlinx-json", ktorVersion)
 
     implementation("org.jetbrains.exposed", "exposed-core", exposedVersion)
+    implementation("org.jetbrains.exposed", "exposed-migration", exposedVersion)
     implementation("org.jetbrains.exposed", "exposed-dao", exposedVersion)
     implementation("org.jetbrains.exposed", "exposed-jdbc", exposedVersion)
     implementation("org.jetbrains.exposed", "exposed-kotlin-datetime", exposedVersion)
@@ -71,12 +72,12 @@ tasks.test {
 }
 
 tasks.withType<JavaCompile>() {
-    targetCompatibility = JavaVersion.VERSION_21.toString()
+    targetCompatibility = JavaVersion.VERSION_17.toString()
 }
 
 tasks.withType<KotlinCompile>() {
     compilerOptions {
-        jvmTarget = JvmTarget.JVM_21
+        jvmTarget = JvmTarget.JVM_17
     }
 }
 

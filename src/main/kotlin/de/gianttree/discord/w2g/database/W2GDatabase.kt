@@ -1,9 +1,13 @@
 package de.gianttree.discord.w2g.database
 
+import MigrationUtils
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import de.gianttree.discord.w2g.Config
-import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.DatabaseConfig
+import org.jetbrains.exposed.sql.SqlLogger
+import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.statements.StatementContext
 import org.jetbrains.exposed.sql.statements.expandArgs
 import java.util.logging.Logger
@@ -29,7 +33,12 @@ suspend fun setupDatabaseConnection(config: Config, logger: Logger): Database {
     })
 
     suspendedInTransaction(database) {
-        SchemaUtils.createMissingTablesAndColumns(Guilds, Rooms)
+        logger.info("Setting up database...")
+        MigrationUtils.statementsRequiredForDatabaseMigration(*arrayOf(Guilds, Rooms), withLogs = true)
+            .forEach {
+                this.exec(it)
+            }
+        logger.info("Database setup complete.")
     }
 
     return database
