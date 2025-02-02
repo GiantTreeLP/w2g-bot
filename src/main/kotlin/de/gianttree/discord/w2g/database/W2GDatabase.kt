@@ -34,7 +34,7 @@ suspend fun setupDatabaseConnection(config: Config, logger: Logger): Database {
 
     suspendedInTransaction(database) {
         logger.info("Setting up database...")
-        MigrationUtils.statementsRequiredForDatabaseMigration(*arrayOf(Guilds, Rooms), withLogs = true)
+        MigrationUtils.statementsRequiredForDatabaseMigration(Guilds, Rooms, withLogs = true)
             .forEach {
                 this.exec(it)
             }
