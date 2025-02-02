@@ -34,7 +34,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
-import kotlinx.serialization.ExperimentalSerializationApi
 import org.jetbrains.exposed.sql.selectAll
 import java.util.logging.ConsoleHandler
 import java.util.logging.Level
@@ -60,15 +59,15 @@ If you want to share suggestions for improvement or have any issues with the bot
 
 @Suppress("RegExpUnnecessaryNonCapturingGroup")
 internal val urlRegex =
-    ("""(?:(?:(?:https?|ftp):)?//)(?:\S+(?::\S*)?@)?(?:(?!(?:10|127)(?:\.\d{1,3}){3})""" +
-            """(?!(?:169\.254|192\.168)(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})""" +
-            """(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}""" +
-            """(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|""" +
-            """(?:(?:[a-z0-9\u00a1-\uffff][a-z0-9\u00a1-\uffff_-]{0,62})?[a-z0-9\u00a1-\uffff]\.)+""" +
-            """(?:[a-z\u00a1-\uffff]{2,}\.?))(?::\d{2,5})?(?:[/?#]\S*)?""")
-        .toRegex(
-            RegexOption.IGNORE_CASE
-        )
+    Regex(
+        """(?:(?:(?:https?|ftp):)?//)(?:\S+(?::\S*)?@)?(?:(?!(?:10|127)(?:\.\d{1,3}){3})""" +
+                """(?!(?:169\.254|192\.168)(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})""" +
+                """(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}""" +
+                """(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|""" +
+                """(?:(?:[a-z0-9\u00a1-\uffff][a-z0-9\u00a1-\uffff_-]{0,62})?[a-z0-9\u00a1-\uffff]\.)+""" +
+                """(?:[a-z\u00a1-\uffff]{2,}\.?))(?::\d{2,5})?(?:[/?#]\S*)?""",
+        RegexOption.IGNORE_CASE
+    )
 
 internal val TV_REACTION = ReactionEmoji.Unicode("📺")
 
@@ -220,17 +219,16 @@ private suspend fun ReactionAddEvent.handleTvReaction(context: Context) {
 
     val message = this.getMessage()
     val matches = urlRegex.findAll(message.content).toMutableList()
+    matches.removeFirstOrNull()?.let { match ->
 
-    if (matches.isNotEmpty()) {
-
-        val url = matches.removeFirst().value
+        val url = match.value
         val response = CreateRoom.call(context.httpClient, context.config, url)
 
-        matches.map { it.value }.windowed(URLS_PER_UPDATE, URLS_PER_UPDATE, partialWindows = true).forEach {
+        matches.windowed(URLS_PER_UPDATE, URLS_PER_UPDATE, partialWindows = true).forEach { window ->
             UpdatePlaylist.call(
                 context.httpClient,
                 response.streamKey,
-                UpdatePlaylist.Request(context.config.w2gToken, it)
+                UpdatePlaylist.Request(context.config.w2gToken, window.map { it.value })
             )
         }
 
@@ -253,7 +251,7 @@ private suspend fun ReactionAddEvent.handleTvReaction(context: Context) {
             "Room ${response.streamKey} created for guild " +
                     "${this.guildId?.toString()} (${this.getGuildOrNull()?.name}) and user ${this.user.mention}"
         )
-    } else {
+    } ?: run {
         message.reply {
             content = "${this@handleTvReaction.user.mention} I could not find a url in the message you reacted to!"
             allowedMentions {

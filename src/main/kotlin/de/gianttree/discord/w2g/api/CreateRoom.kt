@@ -41,7 +41,8 @@ object CreateRoom {
         @SerialName("moderated_suggestions") val moderatedSuggestions: Boolean,
         @SerialName("moderated_chat") val moderatedChat: Boolean,
         @SerialName("moderated_user") val moderatedUser: Boolean,
-        @SerialName("moderated_cam") val moderatedCam: Boolean
+        @SerialName("moderated_cam") val moderatedCam: Boolean,
+        @SerialName("moderated_videourl") val moderatedVideoUrl: String,
     )
 
     suspend fun call(httpClient: HttpClient, config: Config, url: String): Response {

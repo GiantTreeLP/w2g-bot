@@ -24,6 +24,6 @@ object UpdatePlaylist {
             contentType(ContentType.Application.Json)
             headers.append(HttpHeaders.ContentType, ContentType.Application.Json.toString())
             setBody(request)
-        }.body<String>().also { println(it) }
+        }.body<String>()
     }
 }
