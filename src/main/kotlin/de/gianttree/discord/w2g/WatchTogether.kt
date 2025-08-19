@@ -5,7 +5,6 @@ import de.gianttree.discord.w2g.api.UpdatePlaylist
 import de.gianttree.discord.w2g.database.Guild
 import de.gianttree.discord.w2g.database.Guilds
 import de.gianttree.discord.w2g.database.setupDatabaseConnection
-import de.gianttree.discord.w2g.database.suspendedInTransaction
 import de.gianttree.discord.w2g.logging.W2GFormatter
 import de.gianttree.discord.w2g.monitoring.RoomCounter
 import de.gianttree.discord.w2g.monitoring.launchMonitoringServer
@@ -35,6 +34,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.logging.ConsoleHandler
 import java.util.logging.Level
 import java.util.logging.Logger
@@ -175,32 +175,35 @@ private fun registerEvents(
             while (this.isActive) {
                 delay(context.config.intervals.guildMemberUpdateInterval)
 
-                suspendedInTransaction(context.database) {
-                    val guild = Guilds.getGuildLeastRecentUpdate() ?: return@suspendedInTransaction
+                val guild = transaction(context.database) {
+                    Guilds.getGuildLeastRecentUpdate()
+                } ?: continue
+                logger.finest("Updating guild ${guild.id.value}")
 
-                    logger.finest("Updating guild ${guild.id.value}")
+                val approxMemberCount =
+                    context.client.getGuildPreviewOrNull(guild.id.value)?.approximateMemberCount ?: 0
 
-                    guild.approxMemberCount =
-                        context.client.getGuildPreviewOrNull(guild.id.value)?.approximateMemberCount ?: 0
-
-                    logger.finest("Guild ${guild.name} (${guild.id}) has ${guild.approxMemberCount} members")
-                    guild.lastUpdate = Clock.System.now().toEpochMilliseconds()
+                transaction {
+                    guild.approxMemberCount = approxMemberCount
                 }
+
+                logger.finest("Guild ${guild.name} (${guild.id}) has ${guild.approxMemberCount} members")
+                guild.lastUpdate = Clock.System.now().toEpochMilliseconds()
             }
         }
     }
 }
 
-private suspend fun GuildDeleteEvent.removeGuild(context: Context) {
-    suspendedInTransaction(context.database) {
+private fun GuildDeleteEvent.removeGuild(context: Context) {
+    transaction(context.database) {
         val guild = Guild.findById(this@removeGuild.guildId)
         guild?.lastUpdate = Clock.System.now().toEpochMilliseconds()
         guild?.active = false
     }
 }
 
-private suspend fun GuildCreateEvent.addGuild(context: Context) {
-    suspendedInTransaction(context.database) {
+private fun GuildCreateEvent.addGuild(context: Context) {
+    transaction(context.database) {
         val guild = Guild.getOrCreate(this@addGuild.guild)
         guild.approxMemberCount = this@addGuild.guild.memberCount ?: 0
         guild.lastUpdate = Clock.System.now().toEpochMilliseconds()
@@ -304,7 +307,7 @@ private fun GuildDeleteEvent.logGuildDelete() {
 
 private suspend fun Kord.updatePresence(context: Context) {
     this.editPresence {
-        val guildCount = suspendedInTransaction(context.database) {
+        val guildCount = transaction(context.database) {
             Guilds.selectAll().where { Guilds.active eq true }.count()
         }
         this.watching("together on $guildCount guilds! 📺")

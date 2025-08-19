@@ -10,10 +10,11 @@ import org.jetbrains.exposed.sql.SqlLogger
 import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.statements.StatementContext
 import org.jetbrains.exposed.sql.statements.expandArgs
+import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.logging.Logger
 import kotlin.time.Duration.Companion.seconds
 
-suspend fun setupDatabaseConnection(config: Config, logger: Logger): Database {
+fun setupDatabaseConnection(config: Config, logger: Logger): Database {
     val hikariConfig = HikariConfig().apply {
         jdbcUrl = config.databaseConnection.jdbcUrl
         driverClassName = config.databaseConnection.driver
@@ -32,7 +33,7 @@ suspend fun setupDatabaseConnection(config: Config, logger: Logger): Database {
         }
     })
 
-    suspendedInTransaction(database) {
+    transaction(database) {
         logger.info("Setting up database...")
         MigrationUtils.statementsRequiredForDatabaseMigration(Guilds, Rooms, withLogs = true)
             .forEach {

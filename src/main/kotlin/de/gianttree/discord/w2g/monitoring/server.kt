@@ -3,7 +3,6 @@ package de.gianttree.discord.w2g.monitoring
 import de.gianttree.discord.w2g.Context
 import de.gianttree.discord.w2g.database.Guilds
 import de.gianttree.discord.w2g.database.Room
-import de.gianttree.discord.w2g.database.suspendedInTransaction
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.cio.*
@@ -13,6 +12,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.datetime.*
 import kotlinx.serialization.Serializable
+import org.jetbrains.exposed.sql.transactions.transaction
 import java.lang.management.ManagementFactory
 
 fun launchMonitoringServer(context: Context): EmbeddedServer<CIOApplicationEngine, CIOApplicationEngine.Configuration> {
@@ -42,8 +42,8 @@ fun Application.w2GMonitoringModule(context: Context) {
     }
     routing {
         get("/") {
-            suspendedInTransaction(context.database) {
-                call.respond(
+            call.respond(
+                transaction(context.database) {
                     Status(
                         Clock.System.now(),
                         Instant.fromEpochMilliseconds(
@@ -60,8 +60,8 @@ fun Application.w2GMonitoringModule(context: Context) {
                         Guilds.getMemberCountSum(),
                         Room.count()
                     )
-                )
-            }
+                }
+            )
         }
     }
 }

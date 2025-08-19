@@ -1,7 +1,6 @@
 package de.gianttree.discord.w2g.database
 
 import dev.kord.common.entity.Snowflake
-import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.Clock
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.deleteAll
@@ -20,18 +19,16 @@ class RoomQueryTest {
 
     @BeforeAll
     fun setupDatabase() {
-        runBlocking {
-            this@RoomQueryTest.database = setupDatabaseConnection(config, Logger.getAnonymousLogger())
-            suspendedInTransaction(this@RoomQueryTest.database) {
-                Guilds.deleteAll()
-                this@RoomQueryTest.guild = Guild.new(Snowflake(0)) {
-                    this.name = "Test Guild"
-                    this.active = true
-                    this.approxMemberCount = 0
-                    this.lastUpdate = Clock.System.now().toEpochMilliseconds()
-                }
-                Rooms.deleteAll()
+        this.database = setupDatabaseConnection(config, Logger.getAnonymousLogger())
+        transaction(this.database) {
+            Guilds.deleteAll()
+            this@RoomQueryTest.guild = Guild.new(Snowflake(0)) {
+                this.name = "Test Guild"
+                this.active = true
+                this.approxMemberCount = 0
+                this.lastUpdate = Clock.System.now().toEpochMilliseconds()
             }
+            Rooms.deleteAll()
         }
     }
 
