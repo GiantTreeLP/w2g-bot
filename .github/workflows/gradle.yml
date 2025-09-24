@@ -22,7 +22,7 @@ jobs:
         distribution: adopt
         java-version: 21
     - name: Cache
-      uses: actions/cache@v4.2.4
+      uses: actions/cache@v4.3.0
       with:
         # A list of files, directories, and wildcard patterns to cache and restore
         path: ~/.gradle/caches/modules-2
