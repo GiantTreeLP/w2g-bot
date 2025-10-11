@@ -10,10 +10,16 @@ import io.ktor.server.engine.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import kotlinx.datetime.*
+import kotlinx.datetime.DateTimePeriod
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.periodUntil
+import kotlinx.datetime.toDateTimePeriod
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.lang.management.ManagementFactory
+import kotlin.time.Clock
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Instant
 
 fun launchMonitoringServer(context: Context): EmbeddedServer<CIOApplicationEngine, CIOApplicationEngine.Configuration> {
     return embeddedServer(
@@ -50,7 +56,7 @@ fun Application.w2GMonitoringModule(context: Context) {
                             runtimeMXBean.startTime
                         ).periodUntil(
                             Instant.fromEpochMilliseconds(runtimeMXBean.startTime)
-                                .plus(runtimeMXBean.uptime, DateTimeUnit.MILLISECOND),
+                                .plus(runtimeMXBean.uptime.milliseconds),
                             TimeZone.currentSystemDefault()
                         ),
                         context.client.resources.shards.totalShards,

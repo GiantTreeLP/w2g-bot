@@ -1,7 +1,7 @@
 package de.gianttree.discord.w2g.database
 
 import dev.kord.common.entity.Snowflake
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.deleteAll
 import org.jetbrains.exposed.sql.transactions.transaction

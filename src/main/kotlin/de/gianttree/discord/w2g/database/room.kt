@@ -1,6 +1,6 @@
 package de.gianttree.discord.w2g.database
 
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID

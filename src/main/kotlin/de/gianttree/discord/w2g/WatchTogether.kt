@@ -32,13 +32,12 @@ import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.logging.ConsoleHandler
 import java.util.logging.Level
 import java.util.logging.Logger
-import kotlin.time.ExperimentalTime
+import kotlin.time.Clock
 
 const val W2G_API_URL = "https://api.w2g.tv/rooms/create.json"
 
@@ -89,7 +88,6 @@ internal const val SUPPORT_GUILD = 854032399145762856
 private val debugGuild = Snowflake(SUPPORT_GUILD)
 
 
-@ExperimentalTime
 suspend fun main() {
     val config = readConfig()
 

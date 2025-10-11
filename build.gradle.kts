@@ -20,7 +20,7 @@ repositories {
 
 dependencies {
 
-    val kordVersion = "0.15.0"
+    val kordVersion = "0.17.0"
     val slf4jVersion = "2.0.17"
     val ktorVersion = "3.3.1"
 
@@ -79,6 +79,7 @@ tasks.withType<JavaCompile>() {
 tasks.withType<KotlinCompile>() {
     compilerOptions {
         jvmTarget = JvmTarget.JVM_17
+        optIn.add("kotlin.time.ExperimentalTime")
     }
 }
 
