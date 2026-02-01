@@ -3,7 +3,7 @@ package de.gianttree.discord.w2g.monitoring
 import de.gianttree.discord.w2g.Context
 import de.gianttree.discord.w2g.database.Guild
 import de.gianttree.discord.w2g.database.Room
-import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import dev.kord.core.entity.Guild as KordGuild
 
 class RoomCounter {

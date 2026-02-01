@@ -3,7 +3,7 @@ package de.gianttree.discord.w2g
 import de.gianttree.discord.w2g.monitoring.RoomCounter
 import dev.kord.core.Kord
 import io.ktor.client.*
-import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.v1.jdbc.Database
 import java.util.logging.Logger
 
 data class Context(

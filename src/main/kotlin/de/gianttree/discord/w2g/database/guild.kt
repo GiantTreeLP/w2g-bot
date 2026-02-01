@@ -1,12 +1,15 @@
 package de.gianttree.discord.w2g.database
 
 import dev.kord.common.entity.Snowflake
+import org.jetbrains.exposed.v1.core.and
+import org.jetbrains.exposed.v1.core.dao.id.EntityID
+import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.eqSubQuery
+import org.jetbrains.exposed.v1.core.min
+import org.jetbrains.exposed.v1.core.sum
+import org.jetbrains.exposed.v1.jdbc.select
+import org.jetbrains.exposed.v1.jdbc.selectAll
 import kotlin.time.Clock
-import org.jetbrains.exposed.dao.id.EntityID
-import org.jetbrains.exposed.sql.and
-import org.jetbrains.exposed.sql.min
-import org.jetbrains.exposed.sql.selectAll
-import org.jetbrains.exposed.sql.sum
 import dev.kord.core.entity.Guild as KordGuild
 
 
