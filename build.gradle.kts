@@ -28,7 +28,7 @@ dependencies {
 
     val hikariVersion = "7.0.2"
     val sqliteVersion = "3.53.2.0"
-    val mariadbVersion = "3.5.8"
+    val mariadbVersion = "3.5.9"
 
     val junitVersion = "6.1.0"
 
