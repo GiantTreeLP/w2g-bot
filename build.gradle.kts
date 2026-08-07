@@ -30,7 +30,7 @@ dependencies {
     val sqliteVersion = "3.53.2.1"
     val mariadbVersion = "3.5.10"
 
-    val junitVersion = "6.1.2"
+    val junitVersion = "6.1.3"
 
     implementation("dev.kord", "kord-core", kordVersion)
     implementation("org.slf4j", "slf4j-api", slf4jVersion)
