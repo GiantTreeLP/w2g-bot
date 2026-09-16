@@ -32,32 +32,32 @@ dependencies {
 
     val junitVersion = "6.1.3"
 
-    implementation("dev.kord", "kord-core", kordVersion)
-    implementation("org.slf4j", "slf4j-api", slf4jVersion)
-    implementation("org.slf4j", "slf4j-jdk14", slf4jVersion)
+    implementation("dev.kord:kord-core:$kordVersion")
+    implementation("org.slf4j:slf4j-api:$slf4jVersion")
+    implementation("org.slf4j:slf4j-jdk14:$slf4jVersion")
 
-    implementation("io.ktor", "ktor-server-core", ktorVersion)
-    implementation("io.ktor", "ktor-server-cio", ktorVersion)
-    implementation("io.ktor", "ktor-server-content-negotiation", ktorVersion)
-    implementation("io.ktor", "ktor-serialization-kotlinx-json", ktorVersion)
+    implementation("io.ktor:ktor-server-core:$ktorVersion")
+    implementation("io.ktor:ktor-server-cio:$ktorVersion")
+    implementation("io.ktor:ktor-server-content-negotiation:$ktorVersion")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
 
-    implementation("org.jetbrains.exposed", "exposed-core", exposedVersion)
-    implementation("org.jetbrains.exposed", "exposed-migration-core", exposedVersion)
-    implementation("org.jetbrains.exposed", "exposed-migration-jdbc", exposedVersion)
-    implementation("org.jetbrains.exposed", "exposed-dao", exposedVersion)
-    implementation("org.jetbrains.exposed", "exposed-jdbc", exposedVersion)
-    implementation("org.jetbrains.exposed", "exposed-kotlin-datetime", exposedVersion)
+    implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
+    implementation("org.jetbrains.exposed:exposed-migration-core:$exposedVersion")
+    implementation("org.jetbrains.exposed:exposed-migration-jdbc:$exposedVersion")
+    implementation("org.jetbrains.exposed:exposed-dao:$exposedVersion")
+    implementation("org.jetbrains.exposed:exposed-jdbc:$exposedVersion")
+    implementation("org.jetbrains.exposed:exposed-kotlin-datetime:$exposedVersion")
 
-    implementation("com.zaxxer", "HikariCP", hikariVersion)
+    implementation("com.zaxxer:HikariCP:$hikariVersion")
 
-    implementation("org.xerial", "sqlite-jdbc", sqliteVersion)
-    implementation("org.mariadb.jdbc", "mariadb-java-client", mariadbVersion)
+    implementation("org.xerial:sqlite-jdbc:$sqliteVersion")
+    implementation("org.mariadb.jdbc:mariadb-java-client:$mariadbVersion")
 
     testImplementation(kotlin("test-junit5"))
-    testImplementation("org.junit.jupiter", "junit-jupiter-api", junitVersion)
-    testRuntimeOnly("org.junit.jupiter", "junit-jupiter-engine", junitVersion)
+    testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
 
-    detektPlugins("io.gitlab.arturbosch.detekt", "detekt-rules-libraries", detekt.toolVersion)
+    detektPlugins("io.gitlab.arturbosch.detekt:detekt-rules-libraries:${detekt.toolVersion}")
 }
 
 detekt {
