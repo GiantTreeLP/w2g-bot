@@ -51,9 +51,10 @@ __**📺 Usage:**__
 
 I will then answer with a link to your private w2g.tv room.
 
-If you want to share suggestions for improvement or have any issues with the bot, join the support guild
-(<https://discord.com/invite/aNYCTeEDNp>).  
+If you want to share suggestions for improvement or have any issues with the bot, join the support guild (<https://discord.com/invite/aNYCTeEDNp>).  
 
+Privacy Policy regarding the bot: https://gianttree.de/privacy-policy-for-the-watch2gether-discord-bot/
+Terms of Service regarding the bot: https://gianttree.de/terms-of-service-for-the-watch2gether-discord-bot/
 """
 
 
